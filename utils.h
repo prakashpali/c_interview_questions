@@ -7,6 +7,7 @@
 #define __UTILS_H__
 
 #include <stdio.h>
+#include <stdlib.h>
 
 void arr_print(int *arr, int n)
 {

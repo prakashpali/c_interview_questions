@@ -1,5 +1,5 @@
 /**
- * Reverse elements of an array.
+ * Remove duplicate elements from an sorted array.
 */
 
 #include "../utils.h"

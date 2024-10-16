@@ -10,14 +10,32 @@
 
 void arr_print(int *arr, int n)
 {
+    if (NULL == arr || 0 == n)
+    {
+        return;
+    }
+
+    printf("[");
     for (size_t i = 0; i < n - 1; i++)
     {
         printf("%d, ", arr[i]);
     }
 
     printf("%d", arr[n - 1]);
+    printf("]");
 
-    printf("\n");
+    printf("\n\n");
+}
+
+void num_swap(int *a, int *b)
+{
+    if (NULL == a || NULL == b)
+    {
+        return;
+    }
+    *a ^= *b;
+    *b ^= *a;
+    *a ^= *b;
 }
 
 #endif /* __UTILS_H__ */

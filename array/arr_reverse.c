@@ -2,8 +2,7 @@
  * Reverse elements of an array.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "../utils.h"
 
 void reverse_arr(int A[], int size)
 {
@@ -17,17 +16,6 @@ void reverse_arr(int A[], int size)
     }
 }
 
-void print_arr(int *arr, int n)
-{
-    for (size_t i = 0; i < n; i++)
-    {
-        printf("%d, ", arr[i]);
-    }
-
-    printf("\n");
-}
-
-
 int main()
 {
     int A[] = {1, 2, 3, 4, 5, 6};
@@ -35,9 +23,9 @@ int main()
     int len_arr = (sizeof(A)/sizeof(A[0]));
 
     printf("=====================================================\n");
-    print_arr(A, len_arr);
+    arr_print(A, len_arr);
     reverse_arr(A, len_arr);
-    print_arr(A, len_arr);
+    arr_print(A, len_arr);
 
     printf("=====================================================\n");
 

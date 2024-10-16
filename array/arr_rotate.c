@@ -2,7 +2,7 @@
  * Program to cyclically rotate an array by one
  */
 
-#include <stdio.h>
+#include "../utils.h"
 
 void rotate(int arr[], int n)
 {
@@ -15,18 +15,6 @@ void rotate(int arr[], int n)
     arr[0] = last_el;
 }
 
-void print_arr(int *arr, int n)
-{
-    for (size_t i = 0; i < n - 1; i++)
-    {
-        printf("%d, ", arr[i]);
-    }
-
-    printf("%d", arr[n - 1]);
-
-    printf("\n");
-}
-
 int main()
 {
     int arr[] = {1, 2, 3, 4, 5};
@@ -34,12 +22,12 @@ int main()
 
     printf("=====================================================\n");
     printf("Given array is\n");
-    print_arr(arr, n);
+    arr_print(arr, n);
 
     rotate(arr, n);
 
     printf("\nRotated array is\n");
-    print_arr(arr, n);
+    arr_print(arr, n);
     printf("=====================================================\n");
 
     return 0;

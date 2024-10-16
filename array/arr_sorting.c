@@ -3,10 +3,7 @@ Implement sorting algo.
 This one is Selection Sort.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <math.h>
+#include "../utils.h"
 
 static void swap(int *a, int *b)
 {
@@ -59,26 +56,16 @@ void sort_arr_descending(int *arr, int n)
     }
 }
 
-void print_arr(int *arr, int n)
-{
-    for (size_t i = 0; i < n; i++)
-    {
-        printf("%d, ", arr[i]);
-    }
-
-    printf("\n");
-}
-
 int main()
 {
     int n = 5;
     int a[] = {3, 6, 8, 1, 0};
 
-    print_arr(a, n);
+    arr_print(a, n);
     sort_arr_descending(a, n);
-    print_arr(a, n);
+    arr_print(a, n);
     sort_arr_ascending(a, n);
-    print_arr(a, n);
+    arr_print(a, n);
 
     return 0;
 }

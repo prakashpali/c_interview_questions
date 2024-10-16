@@ -2,8 +2,7 @@
  * Reverse elements of an array.
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "../utils.h"
 
 int remove_duplicates(int A[], int size)
 {
@@ -21,17 +20,6 @@ int remove_duplicates(int A[], int size)
     return j;
 }
 
-void print_arr(int *arr, int n)
-{
-    for (size_t i = 0; i < n; i++)
-    {
-        printf("%d, ", arr[i]);
-    }
-
-    printf("\n");
-}
-
-
 int main()
 {
     int A[] = {0,0,1,1,1,2,2,3,3,4};
@@ -39,9 +27,9 @@ int main()
     int len_arr = (sizeof(A)/sizeof(A[0]));
 
     printf("=====================================================\n");
-    print_arr(A, len_arr);
+    arr_print(A, len_arr);
     len_arr = remove_duplicates(A, len_arr);
-    print_arr(A, len_arr);
+    arr_print(A, len_arr);
 
     printf("=====================================================\n");
 

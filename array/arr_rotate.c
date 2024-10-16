@@ -26,7 +26,7 @@ int main()
 
     rotate(arr, n);
 
-    printf("\nRotated array is\n");
+    printf("Rotated array is\n");
     arr_print(arr, n);
     printf("=====================================================\n");
 

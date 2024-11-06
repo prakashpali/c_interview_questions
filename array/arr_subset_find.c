@@ -4,7 +4,7 @@
 
 #include "../utils.h"
 
-void sort_array(int *arr, int size)
+static void sort_array(int *arr, int size)
 {
     int min;
     for(int i = 0; i < size-1; i++)

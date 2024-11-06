@@ -1,5 +1,5 @@
 /**
- * Find union of two arrays
+ * Find intersection of two arrays
  */
 
 #include "../utils.h"
@@ -29,7 +29,7 @@ static void sort_array(int *arr, int size)
     }
 }
 
-static void find_union(int *arr1, int arr_size1, int *arr2, int arr_size2, int **final_arr, int *final_arr_size)
+static void find_intersection(int *arr1, int arr_size1, int *arr2, int arr_size2, int **final_arr, int *final_arr_size)
 {
     // sort array 1
     sort_array(arr1, arr_size1);
@@ -42,12 +42,13 @@ static void find_union(int *arr1, int arr_size1, int *arr2, int arr_size2, int *
     arr_print(arr2, arr_size2);
 
     int i = 0, j = 0, k=0, prev1, prev2;
-    *final_arr_size = (arr_size1 + arr_size2);
+    *final_arr_size = GET_MIN(arr_size1, arr_size2);
     *final_arr = (int *)malloc(*final_arr_size * sizeof(int));
 
     // Keep looking for both elements:
-    // if array1[i] == array2[j], increment i & j. Add element to union array
-    // if array1[i] != array2[j], get minimum of array1[i] & array2[j]. Increment i if array1[i] is minimum, else j.
+    // if array1[i] < array2[j], increment i.
+    // if array1[i] > array2[j], increment j.
+    // if both are same, add element to intersection array
 
     while (i < arr_size1 && j < arr_size2)
     {
@@ -62,35 +63,20 @@ static void find_union(int *arr1, int arr_size1, int *arr2, int arr_size2, int *
             continue;
         }
 
-        if (arr1[i] == arr2[j])
+        if (arr1[i] < arr2[j])
+        {
+            i++;
+        }
+        else if (arr1[i] > arr2[j])
+        {
+            j++;
+        }
+        else
         {
             (*final_arr)[k++] = arr1[i];
             i++;
             j++;
         }
-        else
-        {
-            int temp = GET_MIN(arr1[i], arr2[j]);
-            (*final_arr)[k++] = temp;
-            if (temp == arr1[i])
-            {
-                i++;
-            }
-            else
-            {
-                j++;
-            }
-        }
-    }
-
-    while(i < arr_size1)
-    {
-        (*final_arr)[k++] = arr1[i++];
-    }
-
-    while(j < arr_size2)
-    {
-        (*final_arr)[k++] = arr2[j++];
     }
 
     *final_arr_size = k;
@@ -113,7 +99,7 @@ int main()
     printf("Original array2: ");
     arr_print(arr2, arr_size2);
 
-    find_union(arr1, arr_size1, arr2, arr_size2, &final_arr, &final_arr_size);
+    find_intersection(arr1, arr_size1, arr2, arr_size2, &final_arr, &final_arr_size);
 
     printf("final_arr = 0x%X, final_arr_size = %d \n", final_arr, final_arr_size);
 
@@ -127,7 +113,7 @@ int main()
     }
     else
     {
-        printf("Failed to get union of both arrays\n");
+        printf("Failed to get intersection of both arrays\n");
     }
 
     printf("=====================================================\n");

@@ -124,6 +124,33 @@ void ll_print_middle_1(ll_node *head)
     }
 }
 
+
+/* Print data held by middle node of the list. Optimized solution. */
+void ll_print_middle_2(ll_node *head)
+{
+    ll_node *fast = head;
+    ll_node *slow = head;
+
+    int middle_index = 0;
+
+    while((fast != NULL) && (fast->next != NULL))
+    {
+        fast = fast->next->next;
+        slow = slow->next;
+        middle_index++;
+    }
+
+    if(slow != NULL)
+    {
+        printf("Data at the index %d is: %d\n", middle_index, slow->data);
+    }
+    else
+    {
+        printf("Nothing in list.\n");
+    }
+}
+
+
 int main()
 {
     int iter;
@@ -138,6 +165,7 @@ int main()
     ll_print_list(ll_head);
     ll_print_middle(ll_head);
     ll_print_middle_1(ll_head);
+    ll_print_middle_2(ll_head);
 
     return 0;
 }

@@ -125,12 +125,78 @@ static ll_node *ll_merge(ll_node *node1, ll_node *node2)
     return ml_h;
 }
 
+
+static ll_node *ll_merge_1(ll_node *node1, ll_node *node2)
+{
+    ll_node * ml_h = NULL;
+
+    ll_node *temp, *temp_head;
+
+    if((node1 == NULL)&& (node2 == NULL))
+    {
+        return NULL;
+    }
+
+    if(node1->data < node2->data)
+    {
+        ml_h = node1;
+        node1 = node1->next;
+    }
+    else
+    {
+        ml_h = node2;
+        node2 = node2->next;
+    }
+
+    temp_head = ml_h;
+
+    while((node1 != NULL) && (node2 != NULL))
+    {
+        if(node1->data < node2->data)
+        {
+            temp = node1->next;
+            node1->next = NULL;
+            temp_head->next = node1;
+            temp_head = temp_head->next;
+            node1 = temp;
+        }
+        else
+        {
+            temp = node2->next;
+            node2->next = NULL;
+            temp_head->next = node2;
+            temp_head = temp_head->next;
+            node2 = temp;
+        }
+    }
+
+    while(node1 != NULL)
+    {
+        temp = node1->next;
+        node1->next = NULL;
+        temp_head->next = node1;
+        temp_head = temp_head->next;
+        node1 = temp;
+    }
+
+    while(node2 != NULL)
+    {
+        temp = node2->next;
+        node2->next = NULL;
+        temp_head->next = node2;
+        temp_head = temp_head->next;
+        node2 = temp;
+    }
+
+    return ml_h;
+}
+
 int main()
 {
     int iter;
     ll_node *merged_list1;
 
-    for (iter = NUM_NODES; iter > 1; --iter)
+    for (iter = NUM_NODES; iter > 0; --iter)
     {
         ll_push(&ll_head1, iter);
         --iter;
@@ -141,6 +207,9 @@ int main()
     ll_display(ll_head2);
 
     merged_list1 = ll_merge(ll_head1, ll_head2);
+    ll_display(merged_list1);
+
+    merged_list1 = ll_merge_1(ll_head1, ll_head2);
     ll_display(merged_list1);
 
     return 0;

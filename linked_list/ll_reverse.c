@@ -57,10 +57,10 @@ static void ll_display(ll_node *head)
         printf("%d->", head->data);
         head = head->next;
     }
-    printf("NULL\n");
+    printf("NULL\n\n");
 }
 
-static ll_node *ll_reverse(ll_node * head)
+static ll_node *ll_reverse(ll_node *head)
 {
     /* Iterate over the list.
     * We need to change the current->next link to prev.
@@ -87,11 +87,32 @@ static ll_node *ll_reverse(ll_node * head)
     return curr;
 }
 
+static ll_node *ll_reverse_recursive(ll_node * head)
+{
+    /* Iterate over the list.
+    * We need to change the current->next link to prev.
+    */
+    if((head == NULL) || (head->next == NULL))
+    {
+        return head;
+    }
+
+    // reverse the rest of linked list and put the first element at the end
+    ll_node *rest = ll_reverse_recursive(head->next);
+
+    // Make the current head as last node of remaining linked list
+    head->next->next = head;
+
+    // Update next of current head to NULL
+    head->next = NULL;
+
+    // Return the reversed linked list
+    return rest;
+}
+
 int main()
 {
     int iter;
-    ll_node *reversed_list1;
-    ll_node *reversed_list2;
 
     for (iter = NUM_NODES; iter > 1; --iter)
     {
@@ -100,14 +121,28 @@ int main()
         ll_push(&ll_head2, iter);
     }
 
+    printf("=====================================================\n");
+
     ll_display(ll_head1);
     ll_display(ll_head2);
 
-    reversed_list1 = ll_reverse(ll_head1);
-    ll_display(reversed_list1);
+    printf("Using ll_reverse:\n");
+    ll_head1 = ll_reverse(ll_head1);
+    ll_display(ll_head1);
 
-    reversed_list2 = ll_reverse(ll_head2);
-    ll_display(reversed_list2);
+    printf("Using ll_reverse_recursive:\n");
+    ll_head1 = ll_reverse_recursive(ll_head1);
+    ll_display(ll_head1);
+
+    printf("Using ll_reverse:\n");
+    ll_head2 = ll_reverse(ll_head2);
+    ll_display(ll_head2);
+
+    printf("Using ll_reverse_recursive:\n");
+    ll_head2 = ll_reverse_recursive(ll_head2);
+    ll_display(ll_head2);
+
+    printf("=====================================================\n");
 
     return 0;
 }

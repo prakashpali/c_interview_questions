@@ -3,9 +3,12 @@
 int main()
 {
     const int a = 5;
+    int b = 4;
     const int *ptr;
+    // int * const ptr1 = &b;
     ptr = &a;
-    *ptr = 10;
+    // *ptr1 = 2;
+
     printf("%d\n", a);
     return 0;
 }

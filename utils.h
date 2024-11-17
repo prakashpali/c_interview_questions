@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <string.h>
 #include <malloc/malloc.h>
 
 void arr_print(int *arr, int n)

@@ -1,7 +1,8 @@
-// C program to check if we can store data in multiple union
-// members
-#include <stdio.h>
-#include <stdbool.h>
+/**
+ * C program to check bit fields in c
+ */
+
+#include "../utils.h"
 
 // Declaration of union is same as structures
 typedef union

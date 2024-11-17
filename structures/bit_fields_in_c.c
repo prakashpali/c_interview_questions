@@ -16,7 +16,6 @@ typedef struct __attribute__((packed))
 
 int main()
 {
-    // A union variable t
     test t;
 
     memset(&t, 0, sizeof(t));

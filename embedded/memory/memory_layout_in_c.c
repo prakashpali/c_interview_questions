@@ -29,6 +29,7 @@
 // static int global_static_no_init;    // Goes to .bss section. Initialized to 0.
 // static int global_static = 1;        // Goes to .data section.
 static int global_static_zero = 0;   // Goes to .bss section.
+// const int global_const = 5;          // Goes to .data (const) section.
 
 int main()
 {

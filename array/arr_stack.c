@@ -4,14 +4,14 @@
 
 #include "../utils.h"
 
-#define STACK_SIZE  (20)
+#define STACK_SIZE  (5)
 
-int stack[] = {0,1,2,3,4,5,6,7,8,9};
+int stack[STACK_SIZE] = {-1};
 int stack_top = -1;
 
 static void push(int data)
 {
-    if(stack_top > STACK_SIZE)
+    if(stack_top >= (STACK_SIZE - 1))
     {
         printf("stack overflow\n");
         return;
@@ -41,7 +41,15 @@ int main()
     push(7);
     push(8);
 
+
     printf("=====================================================\n");
+    arr_print(stack, (stack_top+1));
+
+    printf("Popped data = %d\n", pop());
+    printf("Popped data = %d\n", pop());
+    printf("Popped data = %d\n", pop());
+    printf("Popped data = %d\n", pop());
+    printf("Popped data = %d\n", pop());
     printf("Popped data = %d\n", pop());
     printf("=====================================================\n");
 

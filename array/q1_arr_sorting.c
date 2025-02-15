@@ -1,7 +1,13 @@
 /**
-Implement sorting algo.
-This one is Selection Sort.
-*/
+ * @file q1_arr_sorting.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q1. WAP to sort an array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 
 #include "../utils.h"
 

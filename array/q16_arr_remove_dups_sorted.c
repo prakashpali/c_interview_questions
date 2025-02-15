@@ -1,6 +1,13 @@
 /**
- * Remove duplicate elements from an sorted array.
-*/
+ * @file q16_arr_remove_dups_sorted.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q16. WAP to remove duplicate elements from an sorted array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 
 #include "../utils.h"
 

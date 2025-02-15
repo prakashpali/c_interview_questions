@@ -1,5 +1,12 @@
 /**
- * Find union of two arrays
+ * @file q9_arr_union.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q9. WAP to find union of two arrays.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

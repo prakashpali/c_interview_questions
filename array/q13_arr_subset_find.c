@@ -1,5 +1,12 @@
 /**
- * Find whether an array is subset of another array
+ * @file q13_arr_subset_find.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q13. WAP to find whether an array is subset of another array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

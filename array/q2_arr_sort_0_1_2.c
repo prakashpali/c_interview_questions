@@ -1,5 +1,12 @@
 /**
- * C program to sort an array with 0, 1 and 2 in a single pass
+ * @file q2_arr_sort_0_1_2.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q2. WAP to sort an array with 0, 1 and 2.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

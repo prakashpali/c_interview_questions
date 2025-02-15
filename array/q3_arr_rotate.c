@@ -1,5 +1,12 @@
 /**
- * Program to cyclically rotate an array by one
+ * @file q3_arr_rotate.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q3. WAP to cyclically rotate an array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"
@@ -14,7 +21,6 @@ void rotate(int arr[], int n)
     // assign the last element to first element
     arr[0] = last_el;
 }
-
 int main()
 {
     int arr[] = {1, 2, 3, 4, 5};

@@ -1,5 +1,12 @@
 /**
- * Queue using array.
+ * @file q6_arr_queue.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q6. WAP to implement a queue using array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

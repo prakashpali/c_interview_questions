@@ -1,5 +1,12 @@
 /**
- * Find intersection of two arrays
+ * @file q10_arr_intersection.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q10. WAP to find intersection of two arrays.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

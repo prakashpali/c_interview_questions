@@ -1,6 +1,13 @@
 /**
- * Reverse elements of an array.
-*/
+ * @file q4_arr_reverse.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q4. WAP to reverse elements of an array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 
 #include "../utils.h"
 

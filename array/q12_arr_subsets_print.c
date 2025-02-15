@@ -1,5 +1,12 @@
 /**
- * Print all subsets of an array.
+ * @file q12_arr_subsets_print.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q12. WAP to print all subsets of an array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include <stdio.h>

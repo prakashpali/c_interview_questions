@@ -1,6 +1,12 @@
-/*
- * Write a code to return minimum and maximum of an array.
- * Structure is used to return two values from minMax()
+/**
+ * @file q7_arr_min_max.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q7. WAP to return minimum and maximum of an array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include<stdio.h>

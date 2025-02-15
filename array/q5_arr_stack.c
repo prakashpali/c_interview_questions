@@ -1,5 +1,12 @@
 /**
- * Stack using array.
+ * @file q5_arr_stack.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q5. WAP to implement a stack using array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

@@ -1,5 +1,12 @@
 /**
- * Find intersection of three arrays
+ * @file q11_arr_intersection_3_arr.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q11. WAP to find intersection of three arrays.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

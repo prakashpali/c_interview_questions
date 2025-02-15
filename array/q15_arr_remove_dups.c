@@ -1,5 +1,12 @@
 /**
- * Remove duplicate elements in an unordered array
+ * @file q15_arr_remove_dups.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q15. WAP to remove duplicate elements in an unordered array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

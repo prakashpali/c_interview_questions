@@ -1,5 +1,12 @@
 /**
- * Print index of subarray with given sum
+ * @file q14_arr_subset_sum.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q14. WAP to print index of subarray with given sum.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include "../utils.h"

@@ -1,5 +1,12 @@
 /**
- * Reverse elements of an array.
+ * @file q8_arr_negative_idx.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q8. WAP to reverse elements of an array.
+ * @version 0.1
+ * @date 2025-02-15
+ *
+ * @copyright Copyright (c) 2025
+ *
  */
 
 #include <stdio.h>

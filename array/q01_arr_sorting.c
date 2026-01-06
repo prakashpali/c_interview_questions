@@ -11,8 +11,7 @@
 
 #include "../utils.h"
 
-
-void sort_arr_ascending(int *arr, int n)
+static void sort_arr_ascending(int *arr, int n)
 {
     int i, j, min_idx, tmp;
 
@@ -34,7 +33,7 @@ void sort_arr_ascending(int *arr, int n)
     }
 }
 
-void sort_arr_descending(int *arr, int n)
+static void sort_arr_descending(int *arr, int n)
 {
     int i, j, max_idx, tmp;
 

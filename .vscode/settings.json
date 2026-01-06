@@ -2,6 +2,8 @@
     "files.associations": {
         "stdio.h": "c",
         "utils.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "queue": "c",
+        "stack": "c"
     }
 }

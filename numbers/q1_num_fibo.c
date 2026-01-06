@@ -1,6 +1,13 @@
 /**
-Implement fibonacci series
-*/
+ * @file q1_num_fibo.c
+ * @author Prakash Pali (prakash14pali@gmail.com)
+ * @brief Q1. WAP to print fibonacci series.
+ * @version 0.1
+ * @date 2025-02-16
+ *
+ * @copyright Copyright (c) 2025
+ *
+ */
 
 #include <stdio.h>
 #include <stdlib.h>

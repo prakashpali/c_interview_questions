@@ -8,6 +8,8 @@
  * Output: 1
  * Input: abcabcabcd
  * Output: 9
+ *
+ * This can also be solved by using dynamic programming approach with an array to store frequency of each character.
  */
 
 int find_non_rep_idx(char *str, int N)

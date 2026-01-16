@@ -46,12 +46,19 @@ typedef struct
     int b[0]; // 0
 } node6;      //-> size = 4
 
+typedef struct
+{
+    short a;  // 2
+    char c;   // 1
+} node7;      //-> size = 4
+
 node1 n1;
 node2 n2;
 node3 n3;
 node4 n4;
 node5 n5;
 node6 n6;
+node7 n7;
 
 int main()
 {
@@ -62,6 +69,7 @@ int main()
     printf("Size of n4=%lu\n", sizeof(n4));
     printf("Size of n5=%lu\n", sizeof(n5));
     printf("Size of n6=%lu\n", sizeof(n6));
+    printf("Size of n7=%lu\n", sizeof(n7));
     printf("=====================================================\n");
 
     return 0;

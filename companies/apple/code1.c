@@ -8,9 +8,9 @@ int find_idx(int *arr, int N, int element)
 {
   int idx = -1;
 
-  for(int i = 0; i < N; i++)
+  for (int i = 0; i < N; i++)
   {
-    if(element == arr[i])
+    if (element == arr[i])
     {
       idx = i;
       break;
@@ -23,9 +23,9 @@ int find_idx(int *arr, int N, int element)
 int main(void)
 {
 
-  int arr[] = {1,2,3,4,5,6,7};
+  int arr[] = {1, 2, 3, 4, 5, 6, 7};
 
-  int N = sizeof(arr)/sizeof(arr[0]);
+  int N = sizeof(arr) / sizeof(arr[0]);
 
   int element = 6;
 
@@ -35,7 +35,6 @@ int main(void)
     printf("Element not found\n");
   else
     printf("Element %d is at index %d\n", element, idx);
-
 
   return 0;
 }

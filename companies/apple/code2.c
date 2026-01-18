@@ -18,20 +18,20 @@ int find_non_rep_idx(char *str, int N)
   char dup_found;
   int i;
 
-  for (i = 0; i < N-1; i++)
+  for (i = 0; i < N - 1; i++)
   {
-    if('_' == str[i])
+    if ('_' == str[i])
     {
-        i++;
-        continue;
+      i++;
+      continue;
     }
     dup_found = 0;
-    for (int j = i+1; j < N; j++)
+    for (int j = i + 1; j < N; j++)
     {
-        if('_' == str[j])
-        {
-            j++;
-        }
+      if ('_' == str[j])
+      {
+        j++;
+      }
       if (str[i] == str[j])
       {
         dup_found = 1;
@@ -39,23 +39,22 @@ int find_non_rep_idx(char *str, int N)
       }
     }
 
-    if(1 == dup_found)
+    if (1 == dup_found)
     {
-        str[i] = '_'; // Mark duplicate character
+      str[i] = '_'; // Mark duplicate character
     }
 
-    if(0 == dup_found && i < N-1)
+    if (0 == dup_found && i < N - 1)
     {
       idx = i;
       break;
     }
-
   }
 
   // Add a logic to check the last character
-  if(i == N-1 && dup_found == 0)
+  if (i == N - 1 && dup_found == 0)
   {
-    idx = N-1;
+    idx = N - 1;
   }
 
   return idx;
@@ -64,7 +63,7 @@ int find_non_rep_idx(char *str, int N)
 int main(void)
 {
   char str[] = "abcabcabcd";
-  int N = sizeof(str)/sizeof(str[0]);
+  int N = sizeof(str) / sizeof(str[0]);
 
   int idx = find_non_rep_idx(str, N);
 

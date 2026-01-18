@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 /**
  * Write a function that takes a string and returns an index of the first non-repeating character in the given string.
@@ -16,45 +17,46 @@ int find_non_rep_idx(char *str, int N)
 {
   int idx = -1;
   char dup_found;
-  int i;
+  int i,j;
 
   for (i = 0; i < N - 1; i++)
   {
-    if ('_' == str[i])
-    {
-      i++;
+    if(str[i] == '*')
       continue;
-    }
+
     dup_found = 0;
-    for (int j = i + 1; j < N; j++)
+    for (j = i + 1; j < N; j++)
     {
-      if ('_' == str[j])
+      if(str[j] == '*')
       {
-        j++;
+        continue;
       }
       if (str[i] == str[j])
       {
         dup_found = 1;
-        str[j] = '_'; // Mark duplicate character
+        str[j] = '*';
       }
     }
 
-    if (1 == dup_found)
+    if (dup_found)
     {
-      str[i] = '_'; // Mark duplicate character
+      str[i] = '*';
     }
-
-    if (0 == dup_found && i < N - 1)
+    else
     {
       idx = i;
+      printf("%s\n", "dup not found\n");
       break;
     }
+
+    printf("%s\n", str);
+
   }
 
-  // Add a logic to check the last character
-  if (i == N - 1 && dup_found == 0)
+  if(-1 == idx && str[N-1] != '*')
   {
-    idx = N - 1;
+    printf("%s\n", "last element");
+    idx = N-1;
   }
 
   return idx;
@@ -62,13 +64,17 @@ int find_non_rep_idx(char *str, int N)
 
 int main(void)
 {
-  char str[] = "abcabcabcd";
-  int N = sizeof(str) / sizeof(str[0]);
+  char str[] = "aaaa";
+  int N = strlen(str);
 
   int idx = find_non_rep_idx(str, N);
 
+  printf("======================================\n");
   if (-1 == idx)
     printf("Found all duplicates\n");
   else
     printf("Element at index %d is not duplicate\n", idx);
+  printf("======================================\n");
+
+  return 0;
 }

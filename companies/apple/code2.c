@@ -45,7 +45,6 @@ int find_non_rep_idx(char *str, int N)
     else
     {
       idx = i;
-      printf("%s\n", "dup not found\n");
       break;
     }
 
@@ -55,7 +54,6 @@ int find_non_rep_idx(char *str, int N)
 
   if(-1 == idx && str[N-1] != '*')
   {
-    printf("%s\n", "last element");
     idx = N-1;
   }
 

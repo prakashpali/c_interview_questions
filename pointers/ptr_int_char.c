@@ -3,13 +3,12 @@
 
 int main()
 {
-    int a;
+    int a = 0x200;
     char *x;
     x = (char *)&a;
-    a = 512;
     x[0] = 1;
     x[1] = 2;
 
-    printf("%d\n", a);
+    printf("0x%x\n", a);
     return 0;
 }

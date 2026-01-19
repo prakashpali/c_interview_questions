@@ -24,7 +24,7 @@ int main(void)
 
     for(int i = 0; i < 5; i++)
     {
-        printf("(*ptr1)[i] = %d\n", (*ptr1)[i]);
+        printf("(*ptr1)[%d] = %d\n", i, (*ptr1)[i]);
     }
 
     int temp = 10;
@@ -35,7 +35,7 @@ int main(void)
 
     for(int i = 0; i < temp; i++)
     {
-        printf("(*ptr2)[i] = %d\n", (*ptr2)[i]);
+        printf("(*ptr2)[%d] = %d\n", i, (*ptr2)[i]);
     }
 
 }

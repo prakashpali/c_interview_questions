@@ -83,7 +83,7 @@ int main()
     // Considering inputs given are valid
     char str[] = "MCMIV";
     printf("=====================================================\n");
-    printf("Integer form of Roman Numeral is %d", romanToDecimal(str));
+    printf("Integer form of Roman Numeral is %d\n", romanToDecimal(str));
     printf("=====================================================\n");
 
     return 0;

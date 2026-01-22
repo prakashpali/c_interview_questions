@@ -1,15 +1,15 @@
 
 /**
- * Write a function to find the longest common prefix string amongst an array of strings.
- * If there is no common prefix, return an empty string "".
+ * Write a function to count longest common prefix string amongst an array of strings.
+ * If there is no common prefix, return zero.
  *
  * Example 1:
  * Input: strs = ["flower","flow","flight"]
- * Output: "fl"
+ * Output: 2
  *
  * Example 2:
  * Input: strs = ["dog","racecar","car"]
- * Output: ""
+ * Output: 0
  * Explanation: There is no common prefix among the input strings.
  */
 

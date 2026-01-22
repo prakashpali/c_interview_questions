@@ -1,17 +1,19 @@
 
 /**
- * Given a string, the task is to reverse the order of the words in the given string.
+ * Write a function to find the longest common prefix string amongst an array of strings.
+ * If there is no common prefix, return an empty string "".
  *
- * Input: s = “geeks quiz practice code”
- * Output: s = “code practice quiz geeks”
+ * Example 1:
+ * Input: strs = ["flower","flow","flight"]
+ * Output: "fl"
  *
- * Input: s = “i love programming very much”
- * Output: s = “much very programming love i”
+ * Example 2:
+ * Input: strs = ["dog","racecar","car"]
+ * Output: ""
+ * Explanation: There is no common prefix among the input strings.
  */
 
-// C program to reverse a string
 #include <stdio.h>
-
 
 int count_common_chars(char* str1, char* str2)
 {

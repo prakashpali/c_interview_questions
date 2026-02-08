@@ -122,7 +122,7 @@ int main()
 
     find_union(arr1, arr_size1, arr2, arr_size2, &final_arr, &final_arr_size);
 
-    printf("final_arr = 0x%X, final_arr_size = %d \n", final_arr, final_arr_size);
+    printf("final_arr = 0x%lX, final_arr_size = %d \n", (unsigned long)final_arr, final_arr_size);
 
     if((NULL != final_arr) && (0 != final_arr_size))
     {

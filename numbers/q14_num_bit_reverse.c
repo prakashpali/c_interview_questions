@@ -52,13 +52,13 @@ unsigned int reverse_bits_32(unsigned int x)
 
 int main(void)
 {
-    unsigned int num = 0xC0;
+    unsigned int num = 0x0C;
 
     printf("=====================================================\n");
-    printf("og num   : 0x%02X\n", num);
-    // num = reverse_bits_32(num);
+    printf("og num   : 0x%08X\n", num);
+    num = reverse_bits_32(num);
     // num = reverse_bits_16(num);
-    num = reverse_bits_8(num);
-    printf("rev of og: 0x%02X\n", num);
+    // num = reverse_bits_8(num);
+    printf("rev of og: 0x%08X\n", num);
     printf("=====================================================\n");
 }

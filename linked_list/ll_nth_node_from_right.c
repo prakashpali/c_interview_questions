@@ -47,7 +47,7 @@ static void ll_display(ll_node *head)
 
 static void ll_print_nth_from_right(ll_node *head, int N)
 {
-    int len = 0;
+    int len = N;
 
     if((N == 0) || (head == NULL) || (head->next == NULL))
     {
@@ -55,7 +55,7 @@ static void ll_print_nth_from_right(ll_node *head, int N)
     }
 
     ll_node *curr = head, *temp = head;
-    while(--N)
+    while(--len)
     {
         temp = temp->next;
     }
@@ -66,7 +66,7 @@ static void ll_print_nth_from_right(ll_node *head, int N)
         temp = temp->next;
     }
 
-    printf("Nth node from right is %d\n", curr->data);
+    printf("%dth node from right is %d\n", N, curr->data);
 }
 
 int main()

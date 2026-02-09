@@ -93,3 +93,15 @@ print()
 x = re.search(r"\w+n\b", txt) # First word that ends with n
 print(x.group())
 print()
+
+print(r"{} - Exactly the number of occurances")
+txt = "My PAN is BUOPP7787C. Can you read it?"
+x = re.search(r"[aA-zZ]{5}\d{4}[aA-zZ]", txt) # Word that ends at the end of the string
+print(x.group())
+print()
+
+print(r"{} - Exactly the number of occurances")
+txt = "My PAN is buopp7787c. Can you read it?"
+x = re.search(r"[aA-zZ]{5}\d{4}[aA-zZ]", txt) # Word that ends at the end of the string
+print(x.group())
+print()

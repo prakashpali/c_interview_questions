@@ -19,33 +19,11 @@ static bool is_palindrome(const char* str)
     int len = strlen(str);
     printf("str len = %d\n", len);
     bool ret = 1;
-    // for (int i = 0; i < len/2; i++)
-    // {
-    //     int start = i;
-    //     int end = len - 1 - i;
-
-    //     if(!(str[start] >= 'A' && str[start] <= 'z'))
-    //     {
-    //         start++;
-    //     }
-    //     if(!(str[end] >= 'A' && str[end] <= 'z'))
-    //     {
-    //         end--;
-    //     }
-
-    //     printf("%d:%c, %d:%c ", start, tolower(str[start]), end, tolower(str[end]));
-    //     if (tolower(str[start]) != tolower(str[end]))
-    //     {
-    //         ret = 0;
-    //         break;
-    //     }
-    // }
 
     int start = 0, end = len-1;
 
     while(start <= end)
     {
-        // Madam, I'm Adam
         char char_start = tolower(str[start++]);
         char char_end = tolower(str[end--]);
 
@@ -65,8 +43,6 @@ static bool is_palindrome(const char* str)
             ret = 0;
             break;
         }
-        // start++;
-        // end--;
     }
 
     printf("\n");

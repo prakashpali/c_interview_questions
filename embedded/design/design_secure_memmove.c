@@ -30,6 +30,7 @@ void* custom_memmove(void* dest, const void* src, size_t n)
 {
     unsigned char* d = (unsigned char*)dest;
     const unsigned char* s = (const unsigned char*)src;
+    size_t clear_len = n;
 
     if (d == s || n == 0) return dest;
 
@@ -85,7 +86,7 @@ void* custom_memmove(void* dest, const void* src, size_t n)
      * at actual memory is cleared and cache is also updated.
      */
     volatile unsigned char *d = (volatile unsigned char *)dest;
-    while (n--) *d++ = 0;
+    while (clear_len--) *d++ = 0;
 
     return dest;
 }

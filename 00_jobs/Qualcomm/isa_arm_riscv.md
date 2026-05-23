@@ -1,5 +1,21 @@
 # ARM vs. RISC-V Instruction Set Architectures (ISA)
 
+## Table of Contents
+1. [Introduction to ISAs](#1-introduction-to-isas)
+2. [Comparative Analysis of ARM and RISC-V](#2-comparative-analysis-of-arm-and-risc-v)
+3. [Key Register Mapping](#3-key-register-mapping)
+4. [Code Pattern: For Loop Expansion](#4-code-pattern-for-loop-expansion)
+5. [Discussion of Key Elements](#5-discussion-of-key-elements)
+    - [5.1 The Licensing and Innovation Gap](#51-the-licensing-and-innovation-gap)
+    - [5.2 Modularity vs. Feature Richness](#52-modularity-vs-feature-richness)
+    - [5.3 Execution Flow: Conditional vs. Branching](#53-execution-flow-conditional-vs-branching)
+    - [5.4 Memory and Endianness](#54-memory-and-endianness)
+6. [Conditional Execution Examples](#6-conditional-execution-examples)
+    - [6.1 ARM (AArch32)](#61-arm-aarch32)
+    - [6.2 ARM (AArch64)](#62-arm-aarch64)
+    - [6.3 RISC-V](#63-risc-v)
+7. [Conclusion](#7-conclusion)
+
 This document provides an overview and comparison of the ARM and RISC-V Instruction Set Architectures, highlighting their key characteristics, differences, and typical use cases.
 
 ## 1. Introduction to ISAs

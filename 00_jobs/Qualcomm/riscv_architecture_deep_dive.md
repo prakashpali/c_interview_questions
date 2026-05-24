@@ -30,15 +30,15 @@ The base integer ISA (RV32I) provides 32 general-purpose registers (x0-x31), eac
 | **x18-x27** | `s2-s11` | Saved Registers | Callee |
 | **x28-x31** | `t3-t6` | Temporaries | Caller |
 
-## 3. The Global Pointer (`gp`) Register
+## 2.1. The Global Pointer (`gp`) Register
 The **Global Pointer (x3)** is an optimization used by compilers and linkers to reduce code size and increase execution speed when accessing global variables.
 
-### 3.1 The Problem
+### 2.1.1. The Problem
 Loading a 32-bit address in RISC-V usually requires two instructions because instructions themselves are only 32 bits:
 1. `lui` (Load Upper Immediate): Sets bits 12-31.
 2. `lw` or `addi`: Sets bits 0-11.
 
-### 3.2 The `gp` Solution
+### 2.1.2. The `gp` Solution
 The linker identifies "small" global variables (those in `.sdata` or `.sbss`) and places them within a 4KB range. It then initializes the `gp` register to the center of this range during startup (CRT0).
 
 Because the `lw` (load word) instruction supports a 12-bit signed offset ($\pm$2048 bytes), the CPU can access any variable in that 4KB range using a **single instruction** relative to `gp`:
@@ -51,6 +51,21 @@ lw   a0, %lo(my_var)(a0)
 lw   a0, %pcrel_lo(label)(gp)
 ```
 This process is known as **Linker Relaxation**.
+
+## 2.2. The Thread pointer (`tp`) Register
+The Thread Pointer (`x4`/`tp`) is a dedicated register used to point to thread-local storage (TLS) or thread-specific data.
+
+### 2.2.1. Purpose
+In multi-threaded environments, each thread often needs its own private copy of certain global or static variables. TLS provides a mechanism for this, allowing each thread to access its own instance of a variable using the same symbolic name. The `tp` register is typically initialized by the operating system or runtime environment during thread creation to point to the base address of the current thread's TLS area.
+
+### 2.2.2. Usage
+Compilers generate code that accesses thread-local variables using an offset from the `tp` register. This allows for efficient access to thread-specific data without requiring complex lookups or function calls.
+```assembly
+# Accessing a thread-local variable 'my_thread_var'
+lw a0, %tprel_lo(my_thread_var)(tp)
+```
+This approach simplifies thread-safe programming and improves performance by making thread-local data access as fast as accessing a global variable.
+
 
 ## 4. Instruction Formats
 RISC-V uses a very clean, fixed-length (32-bit) instruction encoding. There are 6 primary formats:
@@ -280,4 +295,3 @@ sequenceDiagram
     deactivate Vector
     Note over Core: Resume Program Execution
 ```
-

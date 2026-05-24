@@ -19,7 +19,7 @@
 ## 1. The Concept of a Hart (Hardware Thread)
 A **Hart** is the fundamental unit of execution in the RISC-V specification. It stands for **Hardware Thread**.
 
-### 1.1 Definition
+### 1.1. Definition
 A hart is an entity that contains a full architectural state (registers, PC, and CSRs) and independently fetches and executes instructions.
 
 ### 1.2 Applicability to Microcontrollers
@@ -95,7 +95,7 @@ RISC-V uses a very clean, fixed-length (32-bit) instruction encoding. There are 
 
 ## 4. Code Generation Patterns
 
-### 4.1 Function Prologue and Epilogue
+### 4.1. Function Prologue and Epilogue
 When a function starts, it must preserve "Callee-saved" registers if it intends to use them.
 
 ```assembly
@@ -115,7 +115,7 @@ func_name:
     ret                 # Return (jr ra)
 ```
 
-### 4.2 Control Flow: If-Else
+### 4.2. Control Flow: If-Else
 RISC-V does not have conditional execution (like ARM's `ADDEQ`). It uses comparison and branching.
 
 C Code:
@@ -137,7 +137,7 @@ else_block:
 end_if:
 ```
 
-### 4.3 Function Calls (Standard ABI)
+### 4.3. Function Calls (Standard ABI)
 To call a function `void foo(int x, int y)`, the arguments are placed in `a0` and `a1`.
 
 ```assembly
@@ -146,7 +146,7 @@ li   a1, 20      # Arg 1
 jal  ra, foo     # Jump and Link (saves PC+4 into ra)
 ```
 
-### 4.4 Accessing Memory (Load/Store)
+### 4.4. Accessing Memory (Load/Store)
 RISC-V is a strict Load/Store architecture. Arithmetic only happens on registers.
 
 ```assembly
@@ -175,7 +175,7 @@ sw    t1, 0(a2)      # Signal flag
 ## 7. Physical Memory Protection (PMP)
 PMP is the RISC-V equivalent of an MPU (Memory Protection Unit) for Machine Mode.
 
-### 7.1 Configuration
+### 7.1. Configuration
 PMP allows M-mode to grant or deny U-mode/S-mode access to specific physical address ranges.
 - **Registers**: `pmpcfg0`-`pmpcfg15` and `pmpaddr0`-`pmpaddr63`.
 - **Modes**:
@@ -184,24 +184,24 @@ PMP allows M-mode to grant or deny U-mode/S-mode access to specific physical add
     - **NA4**: Naturally Aligned 4-byte.
     - **NAPOT**: Naturally Aligned Power-of-Two.
 
-### 7.2 Locking
+### 7.2. Locking
 If a PMP entry is "Locked" (L-bit set), the permissions apply even to M-mode, providing a way to protect security-critical code from M-mode software bugs.
 
 ## 8. Compressed Instructions (The 'C' Extension)
 In embedded systems, memory footprint is critical. The `RVC` extension provides 16-bit forms of common instructions.
 
-### 8.1 Mechanics
+### 8.1. Mechanics
 - Every 16-bit compressed instruction has a direct 32-bit equivalent.
 - The CPU decoder expands these to 32-bit internally.
 - **Alignment**: When RVC is present, instructions can be aligned to 2-byte boundaries instead of 4-byte boundaries.
 
-### 8.2 Code Density Impact
+### 8.2. Code Density Impact
 Typically, RVC reduces binary size by **25%-30%**, making it competitive with ARM's Thumb-2.
 
 ## 9. Atomic Memory Operations (The 'A' Extension)
 For multi-hart synchronization, RISC-V provides two types of atomic operations.
 
-### 9.1 Load-Reserved / Store-Conditional (LR/SC)
+### 9.1. Load-Reserved / Store-Conditional (LR/SC)
 Used to implement complex atomic primitives (like Compare-and-Swap).
 ```assembly
 lr.w t0, (a0)        # Load value from a0 and register a reservation
@@ -210,7 +210,7 @@ sc.w t1, t0, (a0)    # Store if reservation is still valid (t1=0 on success)
 bnez t1, retry_label # If t1 != 0, reservation was lost, retry
 ```
 
-### 9.2 AMO (Atomic Memory Operations)
+### 9.2. AMO (Atomic Memory Operations)
 Single-instruction operations that perform a read-modify-write in the memory controller or cache.
 - `amoadd.w`: Atomic addition.
 - `amoswap.w`: Atomic swap.
@@ -219,33 +219,33 @@ Single-instruction operations that perform a read-modify-write in the memory con
 ## 10. Interrupt Architecture
 RISC-V handles interrupts differently than ARM's GIC. It typically uses a combination of local and platform-level controllers.
 
-### 10.1 CLINT (Core Local Interruptor)
+### 10.1. CLINT (Core Local Interruptor)
 Handles software interrupts and timer interrupts for each Hart.
 - `mtime`: A 64-bit real-time counter.
 - `mtimecmp`: Used to generate a timer interrupt when `mtime >= mtimecmp`.
 
-### 10.2 PLIC (Platform-Level Interrupt Controller)
+### 10.2. PLIC (Platform-Level Interrupt Controller)
 Prioritizes and routes external interrupts to specific Harts.
 - **Claim/Complete Process**: A Hart "claims" an interrupt by reading a memory-mapped register, which provides the ID of the highest-priority pending interrupt. After handling, it writes the ID back to the "complete" register.
 
-### 10.3 Interrupt Entry
+### 10.3. Interrupt Entry
 The `mcause` register's most significant bit (MSB) distinguishes between **exceptions** (0) and **interrupts** (1).
 
 ## 11. Advanced Interrupt Handling & Modes
 
 RISC-V supports different "modes" of handling interrupts, defined primarily by the `mtvec` (Machine Trap-Vector Base-Address Register).
 
-### 11.1 Handling "Without a Controller" (Direct Mode)
+### 11.1. Handling "Without a Controller" (Direct Mode)
 In basic configurations (Mode 0), all synchronous exceptions and asynchronous interrupts jump to the **same address** stored in `mtvec`.
 - **Logic**: The software must read `mcause` to determine if it's a timer, software, or external interrupt and then branch manually.
 - **Performance**: Higher latency due to software dispatching.
 
-### 11.2 Handling "With a Controller" (Vectored Mode)
+### 11.2. Handling "With a Controller" (Vectored Mode)
 In Mode 1, interrupts jump to `Base + (4 * cause)`.
 - **Logic**: Each interrupt source has a dedicated entry in a jump table.
 - **Performance**: Faster dispatching; resembles the "Auto-vectoring" found in traditional microcontrollers.
 
-### 11.3 CLIC (Core-Local Interrupt Controller) - The NVIC Equivalent
+### 11.3. CLIC (Core-Local Interrupt Controller) - The NVIC Equivalent
 For high-performance microcontrollers, the **CLIC** replaces the basic CLINT/PLIC logic.
 - **Preemption**: Supports hardware-based nested interrupts (hardware stack tracking).
 - **Prioritization**: Supports up to 256 priority levels.
@@ -264,7 +264,7 @@ For high-performance microcontrollers, the **CLIC** replaces the basic CLINT/PLI
 
 In a complex SoC (like Qualcomm Snapdragon), interrupts typically flow through a hierarchy (PLIC for platform level, CLINT/CLIC for core level).
 
-### 13.1 The Standard PLIC Flow (Legacy/Large Systems)
+### 13.1. The Standard PLIC Flow (Legacy/Large Systems)
 1.  **I/O Trigger**: A peripheral (e.g., UART) asserts an interrupt line.
 2.  **PLIC Latch**: The Platform-Level Interrupt Controller sees the line high and sets a "Pending" bit for that ID.
 3.  **Priority Check**: PLIC compares the interrupt's priority against the Hart's "Threshold" register.
@@ -276,7 +276,7 @@ In a complex SoC (like Qualcomm Snapdragon), interrupts typically flow through a
 9.  **Complete**: Software writes the ID back to the **PLIC Complete Register** to signal the PLIC that the interrupt is handled.
 10. **Return**: Execution of `mret` restores the PC from `mepc`.
 
-### 13.2 The Fast CLIC Flow (Low-Latency / MCU)
+### 13.2. The Fast CLIC Flow (Low-Latency / MCU)
 1.  **I/O Trigger**: Peripheral asserts line.
 2.  **CLIC Arbitration**: CLIC immediately determines if the new interrupt has higher priority than the currently executing code.
 3.  **Hardware Vectoring**: CLIC pushes minimal state to the stack (if configured) and fetches the ISR address directly from the vector table.

@@ -22,7 +22,7 @@ A **Hart** is the fundamental unit of execution in the RISC-V specification. It 
 ### 1.1. Definition
 A hart is an entity that contains a full architectural state (registers, PC, and CSRs) and independently fetches and executes instructions.
 
-### 1.2 Applicability to Microcontrollers
+### 1.2. Applicability to Microcontrollers
 Yes, the term "Hart" is directly applicable to microcontrollers:
 - **Single-Core MCUs**: Usually contain exactly one hart. In this context, "Core" and "Hart" are often used interchangeably.
 - **Multi-Core MCUs**: A chip with two physical cores has two harts.
@@ -64,7 +64,7 @@ lui  a0, %hi(my_var)
 lw   a0, %lo(my_var)(a0)
 
 # Accessing a global 'my_var' WITH gp (1 instruction)
-lw   a0, %pcrel_lo(label)(gp)
+lw   a0, %gprel(my_var)(gp)
 ```
 This process is known as **Linker Relaxation**.
 

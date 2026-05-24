@@ -16,5 +16,5 @@ Follow these rules when generating or updating technical documentation in this r
 - Validate that all internal anchor links are functional.
 - Title should start with #.
 - Heading 1 should start with ## followed by heading1_number. Syntax - (## <heading1_number>. <text>).
-- Heading 2 should start with ### followed by heading1_number.heading2_number. Syntax - (## <heading1_number>.<heading1_number>. <text>).
-- Heading 3 should start with #### followed by heading1_number.heading2_number.heading3_number. Syntax - (## <heading1_number>.<heading1_number>.<heading3_number>. <text>).
+- Heading 2 should start with ### followed by heading1_number.heading2_number. Syntax - (### <heading1_number>.<heading2_number>. <text>).
+- Heading 3 should start with #### followed by heading1_number.heading2_number.heading3_number. Syntax - (#### <heading1_number>.<heading2_number>.<heading3_number>. <text>).

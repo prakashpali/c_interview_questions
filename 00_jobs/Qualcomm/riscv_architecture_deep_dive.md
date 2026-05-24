@@ -281,10 +281,3 @@ sequenceDiagram
     Note over Core: Resume Program Execution
 ```
 
-## 16. Summary for Staff Role
-As a Staff Engineer at Qualcomm, you will likely work on:
-- **M-mode Firmware**: Writing the `panic()` handlers and bootloaders.
-- **CSR Management**: Tuning performance and security via `mstatus`, `mtvec`, and `pmpcfg` (Physical Memory Protection).
-- **Linker Scripts**: Defining the `gp` relaxation boundaries to optimize the firmware footprint.
-
-This extensive modularity and the "Hart" execution model are what make RISC-V ideal for the heterogeneous compute environments found in Snapdragon SoCs.

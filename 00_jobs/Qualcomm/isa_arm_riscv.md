@@ -42,11 +42,11 @@ Understanding how registers are utilized for function calls and system state is 
 | **Arguments / Return**| `r0` - `r3` | `x10` - `x17` (`a0`-`a7`) | Used for passing parameters and returning values. |
 | **Temporary Regs** | `r0`-`r3`, `r12` | `x5`-`x7`, `x28`-`x31` | Caller-saved registers for scratch data. |
 | **Saved Regs** | `r4` - `r11` | `x9`, `x18`-`x27` | Callee-saved registers (must be preserved). |
-| **Program Counter** | `r15` (`PC`) | `pc` | Directly accessible on ARM A32 as `r15`. |
+| **Program Counter** | `r15` (`PC`) | `pc` | Directly accessible in A32; RISC-V `pc` is not a GPR. |
 
 ## 4. Code Pattern: For Loop Expansion
 
-A standard C loop: `for (int i = 0; i < 10; i++) { sum += i; }`
+A standard C loop: `for (int i = 0; i < 10; i++) { sum += i; }` (Assuming `sum` is in `r1`/`a0`)
 
 | Step | ARM (A32 / v7-A) | RISC-V (RV32) |
 | :--- | :--- | :--- |
@@ -96,23 +96,23 @@ for (int i = 0; i < 10; i++) {
 
 ## 5. Discussion of Key Elements
 
-### 5.1 The Licensing and Innovation Gap
+### 5.1. The Licensing and Innovation Gap
 ARM's proprietary nature ensures high consistency and vendor verification, making it a "safe" choice for mass-market mobile devices. In contrast, RISC-V’s open nature removes royalty barriers and enables rapid architectural innovation, which is particularly valuable for domain-specific accelerators where custom instructions can provide a competitive edge.
 
-### 5.2 Modularity vs. Feature Richness
+### 5.2. Modularity vs. Feature Richness
 ARM provides a heavy, feature-rich ISA (e.g., NEON for SIMD) which is powerful but can be overkill for tiny embedded sensors. RISC-V’s modularity allows designers to pick only the necessary extensions (like `RV32IMC`), reducing the hardware gate count and minimizing power consumption for resource-constrained IoT devices.
 
-### 5.3 Execution Flow: Conditional vs. Branching
+### 5.3. Execution Flow: Conditional vs. Branching
 ARM historically relies on **Conditional Execution** to avoid pipeline flushes caused by branches. RISC-V omits this to keep the instruction decoder simple and the register file ports minimal. RISC-V instead relies on advanced branch predictors in high-performance implementations to achieve similar or better efficiency without the encoding complexity.
 
-### 5.4 Memory and Endianness
+### 5.4. Memory and Endianness
 ARM’s bi-endian support provides compatibility with legacy networking gear. RISC-V’s commitment to a strictly little-endian base ISA reflects a clean-slate approach that aligns with modern operating systems like Linux and hardware architectures like x86, simplifying cross-platform software development.
 
 ## 6. Conditional Execution Examples
 
 To illustrate the difference, consider the C code: `if (a == b) { c = d + e; }`
 
-### 6.1 ARM (AArch32)
+### 6.1. ARM (AArch32)
 In ARM's 32-bit mode, almost every instruction can be conditional based on the CPSR flags. This avoids a branch instruction and potential pipeline flush.
 
 ```assembly
@@ -120,16 +120,7 @@ CMP   R0, R1       @ Compare a and b
 ADDEQ R2, R3, R4   @ c = d + e (Only executed if Zero Flag is set)
 ```
 
-### ARM (AArch64)
-In 64-bit mode, ARM moved away from universal conditional execution to improve scale, but still provides powerful conditional select instructions.
-
-```assembly
-CMP   W0, W1       @ Compare a and b
-ADD   W5, W3, W4   @ Temp = d + e
-CSEL  W2, W5, W2, EQ @ c = (cond == EQ) ? W5 : W2
-```
-
-### RISC-V
+### 6.2. RISC-V
 RISC-V follows a "Load/Store" and "Compare-and-Branch" philosophy. It intentionally omits conditional execution of arithmetic instructions to keep the hardware simpler and the instruction encoding cleaner.
 
 ```assembly
@@ -146,6 +137,6 @@ add  x12, x13, x14   @ c = d + e
 over:
 ```
 
-## 6. Conclusion
+## 7. Conclusion
 
 Both ARM and RISC-V are powerful RISC architectures with distinct advantages. ARM benefits from a long history and a deeply entrenched ecosystem, making it a safe and proven choice for many applications. RISC-V, with its open, modular, and extensible design, offers unprecedented flexibility and freedom, making it an attractive option for innovation, customization, and avoiding vendor lock-in, particularly in emerging areas like specialized accelerators and open hardware. The choice between them often depends on project requirements, ecosystem needs, and strategic goals.

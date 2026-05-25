@@ -69,6 +69,38 @@ A standard C loop: `for (int i = 0; i < 10; i++) { sum += i; }`
 
 *Note: ARM A32 uses a `cmp` instruction to set condition flags followed by a conditional branch (`bge`), whereas RISC-V combines the comparison and branch into a single instruction.*
 
+### 4.1. For loop expansion in ARM
+```c
+for (int i = 0; i < 10; i++) {
+    # mov r0, #0
+    # loop:
+    # cmp r0, #10
+    # bge done
+
+    sum += i;
+    # add r1, r1, r0
+    # add r0, r0, #1
+    # b loop
+    # done:
+}
+```
+
+### 4.2. For loop expansion in RISC-V
+```c
+for (int i = 0; i < 10; i++) {
+    # li t0, 0
+    # li t1, 10
+    # loop:
+    # bge t0, t1, done
+
+    sum += i;
+    # addi a0, a0, t0
+    # addi t0, t0, 1
+    # j loop
+    # done:
+}
+```
+
 ## 5. Discussion of Key Elements
 
 ### 5.1 The Licensing and Innovation Gap

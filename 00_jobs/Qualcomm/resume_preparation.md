@@ -14,6 +14,25 @@
 
 Silicon real estate is expensive, and One-Time Programmable (OTP) memory like eFuses takes up physical space. Storing a full `RSA-3072` public key (384 bytes) or even an `ECDSA P-256` key (64 bytes) directly in eFuses is highly inefficient and costly for mass production.
 
+### 1.5.1. Signing process
+This is how the signing process looks like on the Host:
+- Hash of all sections is calculated, this gives say N hashes
+- Has of all N hashes are calculated, this gives the final hash
+- This final hash is signed using the private key, the final value is called the signature
+- Raw binary, signature, public key is stored stored together in FLASH
+
+### 1.5.2. Authentication process
+This is how authentication process looks like on the Device:
+- BootROM reads the signature and public key from flash memory.
+- Hash of public key is calculated.
+- This PK-hash is matched witht the public-key hash present in eFuse. This way PK integrity is achieved.
+- Hash of all sections are calculated, this gives N hashes.
+- Hash of all N hashes are calculaed to get final hash.
+- Signature, final hash and public key is shared to crypto algorithm to verify the signature.
+- If signature is correct, the crypto algo returns success.
+- This finally validates the authenticity of bootloader.
+
+
 | HSM   | ROOTID | PERSO | ECDSA | RSA  |
 | :---  | :---   | :---  | :---  | :--- |
 |  TBD  |  TBD   |  TBD  |  TBD  | TBD  |

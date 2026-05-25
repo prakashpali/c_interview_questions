@@ -12,6 +12,8 @@
 
 ### 1.5. Keys used for authentication
 
+Silicon real estate is expensive, and One-Time Programmable (OTP) memory like eFuses takes up physical space. Storing a full `RSA-3072` public key (384 bytes) or even an `ECDSA P-256` key (64 bytes) directly in eFuses is highly inefficient and costly for mass production.
+
 | HSM   | ROOTID | PERSO | ECDSA | RSA  |
 | :---  | :---   | :---  | :---  | :--- |
 |  TBD  |  TBD   |  TBD  |  TBD  | TBD  |

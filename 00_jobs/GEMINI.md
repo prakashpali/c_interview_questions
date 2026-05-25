@@ -9,8 +9,7 @@ Follow these rules when generating or updating technical documentation in this r
 
 ## 2. Formatting Standards
 ### 2.1. Markdown files
-- Use proper heading hierarchies (#, ##, ###).
-- Before finalizing a document, check for sequential heading indices (e.g., ensuring 2.2 is followed by 2.3 or 3, not 4).
+- Before finalizing a document, check all sequential heading indices (e.g., ensuring 2.2 is followed by 2.3 or 3, not 4).
 - Title should start with #.
 - Heading 1 should start with ## followed by heading1_number. Syntax - (## <heading1_number>. <text>).
 - Heading 2 should start with ### followed by heading1_number.heading2_number. Syntax - (### <heading1_number>.<heading2_number>. <text>).

@@ -32,6 +32,27 @@ This is how authentication process looks like on the Device:
 - If signature is correct, the crypto algo returns success.
 - This finally validates the authenticity of bootloader.
 
+### 1.5.3. RSA vs ECDSA
+
+| RSA   | ECDSA |
+| :---  | :---  |
+| RSA relies on the difficulty of factoring large integers into their prime factors. | ECDSA relies on the difficulty of the elliptic curve discrete logarithm problem (ECDLP). |
+| A 3072-bit RSA key offers roughly equivalent security to a 256-bit ECDSA key. | A 256-bit ECDSA key provides similar security to a 3072-bit RSA key. |
+| RSA is computationally more expensive for equivalent security levels. | ECDSA is generally faster and requires less computational power. |
+| RSA keys are longer (e.g., 3072 bits) for equivalent security. | ECDSA keys are much shorter (e.g., 256 bits) for comparable security. |
+
+### 1.5.4. Generating Private keys (ECDSA)
+Generating the private key is mathematically trivial but practically the most critical point of failure in embedded systems.
+The private key, usually denoted as `d`, is simply a cryptographically secure random integer.
+- **Constraint**: It must be selected such that $1 \le d \le n-1$.
+- **Hardware Implementation**: In an SoC, this relies heavily on a True Random Number Generator (TRNG) utilizing physical entropy (like thermal noise in the silicon). If the random number generator is predictable, the private key can be easily compromised.
+
+### 1.5.5. Generating Public keys (ECDSA)
+
+The public key is not just a random string of numbers; it is a specific set of spatial coordinates $(x, y)$ that represent a point on the elliptic curve.
+
+Public key is shared with the binary and sits in the silicon.
+
 
 | HSM   | ROOTID | PERSO | ECDSA | RSA  |
 | :---  | :---   | :---  | :---  | :--- |

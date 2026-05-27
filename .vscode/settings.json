@@ -5,5 +5,11 @@
         "stdlib.h": "c",
         "queue": "c",
         "stack": "c"
-    }
+    },
+    "code-runner.executorMap": {
+        "c": "mkdir -p \"$dir/bin\" && gcc -fdiagnostics-color=always -g \"$dir$fileName\" -o \"$dir/bin/$fileNameWithoutExt\" && \"$dir/bin/$fileNameWithoutExt\""
+    },
+    "code-runner.clearPreviousOutput": true,
+    "code-runner.saveFileBeforeRun": true,
+    "code-runner.runInTerminal": true
 }

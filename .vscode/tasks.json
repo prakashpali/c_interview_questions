@@ -1,18 +1,9 @@
 {
     "tasks": [
         {
-            "type": "cppbuild",
-            "label": "C Build",
-            "command": "/usr/bin/gcc",
-            "args": [
-                "-fdiagnostics-color=always",
-                "-g",
-                "${file}",
-                "-o",
-                "${fileDirname}/bin/${fileBasenameNoExtension}.o",
-                "&&",
-                "${fileDirname}/bin/${fileBasenameNoExtension}.o"
-            ],
+            "type": "shell",
+            "label": "Compile and Run Active C File",
+            "command": "mkdir -p \"${fileDirname}/bin\" && gcc -fdiagnostics-color=always -g \"${file}\" -o \"${fileDirname}/bin/${fileBasenameNoExtension}\" && \"${fileDirname}/bin/${fileBasenameNoExtension}\"",
             "options": {
                 "cwd": "${fileDirname}"
             },
@@ -23,7 +14,7 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "detail": "C Build"
+            "detail": "Compiles the active C file, stores the output in a local 'bin' directory, and runs it."
         }
     ],
     "version": "2.0.0"

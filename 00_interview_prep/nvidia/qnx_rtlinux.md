@@ -219,3 +219,42 @@ Because QNX isolates services in separate address spaces, the microkernel acts a
 ### 12.3. Resiliency and Performance
 By limiting the kernel's role to these core thread and IPC services, the architecture achieves high reliability. If a user-space process (like a driver) fails, the microkernel remains functional because it is isolated from the crash, allowing it to continue managing communication for the rest of the system. To offset the performance cost of frequent context switching and data copying, recent versions of the kernel (such as SDP 8.0) have been highly optimized to execute these services extremely quickly
 
+## 13. Virtual Memory and Address Space Implementation in QNX
+
+The QNX Neutrino RTOS implements a fully protected virtual memory architecture using the hardware Memory Management Unit (MMU). Every user-space process (including drivers, filesystems, and networking stacks) operates in its own private, isolated virtual address space.
+
+### 13.1. Address Space Segmentation and Layout
+
+A QNX process's virtual address space is split into two primary regions:
+* **User Space Partition:** Occupies the lower portion of the virtual memory space. This region contains the process's text (code), initialized/uninitialized data, heap, thread stacks, and mapped shared libraries.
+* **Kernel Space Partition:** The QNX microkernel (`procnto`) is mapped into the upper virtual address range of every process's page table directory. This is a privileged global mapping. Although it is present in the address space of every user process, access to it is blocked in user mode by supervisor page-protection bits.
+* **Fast System Calls:** Mapping the kernel into the upper range of every process means that when a user thread executes a system call (hypercall) or an interrupt occurs, the CPU switches privilege modes (e.g., EL0 to EL1 on ARM, Ring 3 to Ring 0 on x86) and jumps directly to the kernel code. This transition requires no reload of the translation table base register, avoiding TLB invalidations and page table traversal overheads for basic system entry.
+
+### 13.2. Page Table Structures and MMU Integration
+
+The Virtual Memory Manager (VMM) component of `procnto` dynamically manages the hardware page tables:
+* **Translation Scheme:** It programs the processor's translation registers (e.g., `TTBR0`/`TTBR1` on ARM, `CR3` on x86) to point to the active page directory.
+* **Granularity:** QNX supports standard page sizes (typically 4 KB) as well as large/huge pages (e.g., 2 MB or 1 GB on x86/ARM) for mapping contiguous physical structures like framebuffers, hardware MMIO registers, or massive DMA buffers, which reduces TLB pressure.
+* **Page Fault Handler:** When a process accesses an unmapped or write-protected page, the hardware MMU triggers a page fault exception. The microkernel intercepts this trap and routes it to the VMM, which either resolves the mapping (e.g., lazy allocation, physical device mapping) or delivers a signal (`SIGSEGV`) to the offending thread.
+
+### 13.3. Mitigation of Context Switch Overhead via TLB Tagging
+
+Because QNX relies heavily on user-space OS services communicating via message-passing IPC, context switches occur far more frequently than in monolithic operating systems. Without hardware mitigation, switching address spaces would require a complete flush of the Translation Lookaside Buffer (TLB), causing major pipeline stalls and cache thrashing.
+
+QNX mitigates this using processor-specific TLB tagging:
+* **ARM ASID (Address Space Identifier):** QNX assigns a unique ASID to each process's address space. The MMU tags all cached translation entries in the TLB with this ASID. During a context switch, the microkernel updates the active ASID register (e.g., `CONTEXTIDR` or `TTBR0_EL1` field) to match the incoming process. The TLB is not flushed; entries belonging to the outgoing process remain cached and valid for the next time it runs.
+* **x86 PCID (Process Context Identifier):** On x86 architectures, QNX utilizes PCID to similarly tag TLB entries, preventing TLB invalidation on `CR3` register updates during process context switches.
+
+### 13.4. IPC and Cross-Address-Space Data Movement
+
+Since sender and receiver processes reside in isolated virtual address spaces, moving message data between them requires careful memory access:
+* **Direct Cross-Space Copy:** For standard message-passing calls (`MsgSend()`, `MsgReceive()`, `MsgReply()`), the microkernel performs a direct copy from the sender's virtual buffer to the receiver's virtual buffer. To achieve this without mapping the entire target process, the kernel temporarily maps the physical page(s) corresponding to the target process's buffer into a reserved virtual address window within the kernel's privileged address space, or uses CPU-specific cross-space copy features (like ARM's unprivileged memory access instructions).
+* **Shared Memory (Zero-Copy):** For performance-critical data paths (e.g., transferring video frames from a camera driver to a vision-processing application), QNX supports POSIX shared memory. The VMM maps the same physical memory frames into the page tables of both processes. Once established, processes read and write directly to the shared memory window, completely bypassing the microkernel and eliminating data copying and IPC overhead.
+
+### 13.5. Real-Time Determinism and Memory Locking
+
+In hard real-time environments, page fault handling is a source of unacceptable latency and jitter. To guarantee deterministic execution times:
+* **No Swap Files:** QNX Neutrino does not implement demand paging to disk (swapping). All mapped virtual memory corresponds directly to physical RAM or hardware registers.
+* **Memory Pinning (`mlock`, `mlockall`):** Critical threads invoke POSIX memory locking APIs to pin virtual memory regions to physical frames. This forces the VMM to resolve all translation paths, allocate the physical memory, and populate the page tables immediately. This guarantees that subsequent memory accesses will never trigger page faults during time-critical operations.
+* **Proactive Page-Table Allocation:** The VMM can eagerly allocate all necessary level-2 and level-3 page tables for real-time threads to ensure translation walks have a deterministic execution path.
+

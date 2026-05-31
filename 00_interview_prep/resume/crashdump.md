@@ -96,3 +96,30 @@ flowchart TD
     WarmBoot --> Main[Jump to Kernel Entry / main]
     ColdBoot --> Main
 ```
+
+## 10. Multi-Layer Boot Crashdumps and Vector Relocation
+
+In a complex SoC, the boot process is staged (e.g., Boot ROM -> First Stage Bootloader (FSBL) -> U-Boot -> OS). A system crash can happen at any of these stages, meaning the Crashdump system must be active from the very first instruction.
+
+### 10.1. Layered Crashdump Handlers
+- **Boot ROM Layer**: The Boot ROM is permanently burned into silicon. Its primary job is hardware initialization and loading the next stage. It has its own built-in crashdump routine. If a hardware fault happens here, the Boot ROM captures the state (usually to a dedicated SRAM or UART, since DDR might not be initialized yet).
+- **Upper Boot Layers (FSBL/OS)**: Once the upper layer code is loaded into RAM (SRAM or DDR), it provides a much more sophisticated crash handler (e.g., it can write dumps to eMMC/Flash or over USB). 
+
+### 10.2. Vector Relocation across Boot Layers
+The critical mechanism to switch control from the Boot ROM's crash handler to the Upper Layer's crash handler is **Vector Relocation**.
+
+When an exception occurs, the CPU jumps to a predefined memory address to execute the trap handler. 
+* In **ARM Cortex-M**, this address is defined by the **VTOR** (Vector Table Offset Register).
+* In **RISC-V**, this is defined by the **`mtvec`** (Machine Trap-Vector Base-Address Register) or **`stvec`** (Supervisor Trap-Vector Base-Address Register).
+
+**The Relocation Flow:**
+1. **Power On**: The CPU boots up. Hardware sets `mtvec` to the fixed physical address of the Boot ROM's trap vector table. Any crash routes to the ROM's minimal crashdump handler.
+2. **Layer Handoff**: The Boot ROM verifies and loads the FSBL into memory. 
+3. **Relocating Vectors**: Right before jumping to the FSBL's main execution point, the Boot ROM (or the FSBL's very first startup assembly code) writes the memory address of the FSBL's new vector table into the `mtvec` register:
+   ```assembly
+   la t0, fsbl_trap_vector_table
+   csrw mtvec, t0
+   ```
+4. **New Crash Context**: From that exact CPU cycle onward, if a crash occurs, the CPU hardware will read `mtvec`, jump to the new `fsbl_trap_vector_table`, and execute the upper layer's advanced crashdump logic instead of the Boot ROM's.
+
+By dynamically updating `mtvec` (or `stvec`) at every boot layer transition, the system seamlessly hands off exception handling and crashdump responsibility to increasingly capable software layers.

@@ -69,6 +69,7 @@ Public key is shared with the binary and sits in the silicon.
 ## 4. IPC between sub-systems
 
 ## 5. Crashdump implementation
+More details at [crashdump.md](crashdump.md)
 
 ## 6. Driver development
 

@@ -20,9 +20,15 @@
 
 int main (void)
 {
-    int num = 15;
+    int num;
     printf("==========================\n");
+    num = 7;
     printf("num = %d, aligned num = %d\n", num, ALIGN_TO_8B(num));
+
+    num = 15;
+    printf("num = %d, aligned num = %d\n", num, ALIGN_TO_8B(num));
+
+    num = 27;
     printf("num = %d, aligned num = %d\n", num, ALIGN_TO_32B(num));
     printf("==========================\n");
 

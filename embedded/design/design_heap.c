@@ -1,141 +1,155 @@
-/*
-    FreeRTOS V8.2.3 - Copyright (C) 2015 Real Time Engineers Ltd.
-    All rights reserved
-
-    VISIT http://www.FreeRTOS.org TO ENSURE YOU ARE USING THE LATEST VERSION.
-
-    This file is part of the FreeRTOS distribution.
-
-    FreeRTOS is free software; you can redistribute it and/or modify it under
-    the terms of the GNU General Public License (version 2) as published by the
-    Free Software Foundation >>>> AND MODIFIED BY <<<< the FreeRTOS exception.
-
-    ***************************************************************************
-    >>!   NOTE: The modification to the GPL is included to allow you to     !<<
-    >>!   distribute a combined work that includes FreeRTOS without being   !<<
-    >>!   obliged to provide the source code for proprietary components     !<<
-    >>!   outside of the FreeRTOS kernel.                                   !<<
-    ***************************************************************************
-
-    FreeRTOS is distributed in the hope that it will be useful, but WITHOUT ANY
-    WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-    FOR A PARTICULAR PURPOSE.  Full license text is available on the following
-    link: http://www.freertos.org/a00114.html
-
-    ***************************************************************************
-     *                                                                       *
-     *    FreeRTOS provides completely free yet professionally developed,    *
-     *    robust, strictly quality controlled, supported, and cross          *
-     *    platform software that is more than just the market leader, it     *
-     *    is the industry's de facto standard.                               *
-     *                                                                       *
-     *    Help yourself get started quickly while simultaneously helping     *
-     *    to support the FreeRTOS project by purchasing a FreeRTOS           *
-     *    tutorial book, reference manual, or both:                          *
-     *    http://www.FreeRTOS.org/Documentation                              *
-     *                                                                       *
-    ***************************************************************************
-
-    http://www.FreeRTOS.org/FAQHelp.html - Having a problem?  Start by reading
-    the FAQ page "My application does not run, what could be wrong?".  Have you
-    defined configASSERT()?
-
-    http://www.FreeRTOS.org/support - In return for receiving this top quality
-    embedded software for free we request you assist our global community by
-    participating in the support forum.
-
-    http://www.FreeRTOS.org/training - Investing in training allows your team to
-    be as productive as possible as early as possible.  Now you can receive
-    FreeRTOS training directly from Richard Barry, CEO of Real Time Engineers
-    Ltd, and the world's leading authority on the world's leading RTOS.
-
-    http://www.FreeRTOS.org/plus - A selection of FreeRTOS ecosystem products,
-    including FreeRTOS+Trace - an indispensable productivity tool, a DOS
-    compatible FAT file system, and our tiny thread aware UDP/IP stack.
-
-    http://www.FreeRTOS.org/labs - Where new FreeRTOS products go to incubate.
-    Come and try FreeRTOS+TCP, our new open source TCP/IP stack for FreeRTOS.
-
-    http://www.OpenRTOS.com - Real Time Engineers ltd. license FreeRTOS to High
-    Integrity Systems ltd. to sell under the OpenRTOS brand.  Low cost OpenRTOS
-    licenses offer ticketed support, indemnification and commercial middleware.
-
-    http://www.SafeRTOS.com - High Integrity Systems also provide a safety
-    engineered and independently SIL3 certified version for use in safety and
-    mission critical applications that require provable dependability.
-
-    1 tab == 4 spaces!
-*/
-
-
-
-/*
- * The simplest possible implementation of pvPortMalloc().  Note that this
- * implementation does NOT allow allocated memory to be freed again.
+/**
+ * Basic Heap Design (Malloc and Free)
+ * 
+ * Key Characteristics:
+ * - Implements a simple first-fit memory allocator.
+ * - Block splitting is implemented to avoid wasting huge chunks of memory.
+ * - Coalescing (merging adjacent free blocks) is INTENTIONALLY OMITTED as per requirements.
  *
- * See heap_2.c and heap_3.c for alternative implementations, and the memory
- * management pages of http://www.FreeRTOS.org for more information.
+ * Behavior on Back-to-Back Malloc and Free:
+ * - \b Scenario A (Same Size): If you call `ptr = my_malloc(64)` and then `my_free(ptr)` repeatedly, 
+ *   the allocator will find the exact same 64-byte block during the next First-Fit search. 
+ *   It will reuse it perfectly without causing any further fragmentation.
+ *
+ * - \b Scenario B (Increasing Sizes): If you call `my_malloc(16)`, `my_free()`, and then `my_malloc(32)`,
+ *   the 16-byte block is now too small. The allocator skips it and splits the next large chunk.
+ *   Because coalescing is disabled, that 16-byte block becomes a permanent "hole" unless a future 
+ *   allocation requests <= 16 bytes. Over time, these varying-sized back-to-back calls 
+ *   will severely fragment the heap.
  */
-#include <stdlib.h>
-#include "FreeRTOS.h"
-#include "task.h"
 
+#include <stddef.h>
+#include <stdint.h>
+#include <stdbool.h>
 
-/* Allocate the memory for the heap.  The struct is used to force byte
-alignment without using any non-portable code. */
-extern struct xRTOS_HEAP
-{
-	unsigned long ulDummy;
-	unsigned char ucHeap[ configTOTAL_HEAP_SIZE ];
-} xHeap;
+#define HEAP_SIZE 10240 // 10 KB Heap
+#define ALIGNMENT 8
 
-static size_t xNextFreeByte = ( size_t ) 0;
-/*-----------------------------------------------------------*/
+// Macro to align memory allocations to an 8-byte boundary
+#define ALIGN(size) (((size) + (ALIGNMENT - 1)) & ~(ALIGNMENT - 1))
 
-void *pvPortMalloc( size_t xWantedSize )
-{
-void *pvReturn = NULL;
+/**
+ * @brief Memory Block Header
+ * Every allocated and free chunk of memory is preceded by this header.
+ */
+typedef struct BlockHeader {
+    size_t size;                // Size of the usable data block (excluding this header)
+    bool is_free;               // Status flag: true if block is available
+    struct BlockHeader* next;   // Pointer to the next block header in the heap
+} BlockHeader;
 
-	/* Ensure that blocks are always aligned to the required number of bytes. */
-	#if portBYTE_ALIGNMENT != 1
-		if( xWantedSize & portBYTE_ALIGNMENT_MASK )
-		{
-			/* Byte alignment required. */
-			xWantedSize += ( portBYTE_ALIGNMENT - ( xWantedSize & portBYTE_ALIGNMENT_MASK ) );
-		}
-	#endif
+// ---------------------------------------------------------
+// Global Variables for the Heap
+// ---------------------------------------------------------
 
-	vTaskSuspendAll();
-	{
-		/* Check there is enough room left for the allocation. */
-		if( ( ( xNextFreeByte + xWantedSize ) < configTOTAL_HEAP_SIZE ) &&
-			( ( xNextFreeByte + xWantedSize ) > xNextFreeByte )	)/* Check for overflow. */
-		{
-			/* Return the next free byte then increment the index past this
-			block. */
-			pvReturn = &( xHeap.ucHeap[ xNextFreeByte ] );
-			xNextFreeByte += xWantedSize;
-		}
-	}
-	xTaskResumeAll();
+// The actual chunk of memory we will manage
+static uint8_t heap_memory[HEAP_SIZE];
 
-	return pvReturn;
-}
-/*-----------------------------------------------------------*/
+// Pointer to the start of our linked list of memory blocks
+static BlockHeader* heap_head = NULL;
 
-void vPortFree( void *pv )
-{
-	/* Memory cannot be freed using this scheme.  See heap_2.c and heap_3.c
-	for alternative implementations, and the memory management pages of
-	http://www.FreeRTOS.org for more information. */
-	( void ) pv;
-}
-/*-----------------------------------------------------------*/
+// ---------------------------------------------------------
+// APIs
+// ---------------------------------------------------------
 
-void vPortInitialiseBlocks( void )
-{
-	/* Only required when static memory is not cleared. */
-	xNextFreeByte = ( size_t ) 0;
+/**
+ * @brief Initialize the heap system
+ */
+void heap_init(void) {
+    // Point the head to the start of the raw memory array
+    heap_head = (BlockHeader*)heap_memory;
+    
+    // The initial block takes up the entire heap (minus its own header)
+    heap_head->size = HEAP_SIZE - sizeof(BlockHeader);
+    heap_head->is_free = true;
+    heap_head->next = NULL;
 }
 
+/**
+ * @brief Custom Malloc implementation (First-Fit Algorithm)
+ * 
+ * Coding Logic:
+ * 1. Validate input size and auto-initialize the heap if it's the first call.
+ * 2. Align the requested size to ensure hardware memory access boundaries are respected.
+ * 3. Traverse the linked list of blocks starting from 'heap_head' (First-Fit strategy).
+ * 4. When a suitable free block is found:
+ *    a. If it's significantly larger than needed, split it into two blocks to minimize internal fragmentation.
+ *    b. Mark the block as allocated.
+ *    c. Return the pointer to the user payload area (skipping the BlockHeader).
+ * 5. Return NULL if no suitable block is found.
+ */
+void* my_malloc(size_t size) {
+    if (size == 0) {
+        return NULL;
+    }
+    
+    // Auto-initialize on first call
+    if (heap_head == NULL) {
+        heap_init();
+    }
 
+    // Step 2: Align the requested size to an 8-byte boundary
+    size_t aligned_size = ALIGN(size);
+    BlockHeader* current = heap_head;
+
+    // Step 3: Traverse the linked list (First-Fit Search)
+    while (current != NULL) {
+        // Look for the first block that is both FREE and LARGE ENOUGH
+        if (current->is_free && current->size >= aligned_size) {
+            
+            // Step 4a: Block Splitting Logic
+            // We split only if the remaining space can hold a new BlockHeader + at least one aligned payload chunk.
+            // This prevents creating uselessly small memory blocks (slivers).
+            if (current->size >= aligned_size + sizeof(BlockHeader) + ALIGNMENT) {
+                
+                // Calculate the memory address where the new split block's header will reside
+                BlockHeader* new_block = (BlockHeader*)((uint8_t*)current + sizeof(BlockHeader) + aligned_size);
+                
+                // Configure the new remaining free block
+                new_block->size = current->size - aligned_size - sizeof(BlockHeader);
+                new_block->is_free = true;
+                new_block->next = current->next;
+                
+                // Update the current block to reflect its newly reduced size
+                current->size = aligned_size;
+                current->next = new_block;
+            }
+            
+            // Step 4b: Mark the current block as allocated
+            current->is_free = false;
+            
+            // Step 4c: Return a pointer to the data payload
+            // (current + 1) increments the pointer by sizeof(BlockHeader), jumping exactly over the header.
+            return (void*)(current + 1); 
+        }
+        
+        // Move to the next block in the linked list
+        current = current->next;
+    }
+
+    // Step 5: Out of memory (or heap is too fragmented)
+    return NULL;
+}
+
+/**
+ * @brief Custom Free implementation
+ * 
+ * Coding Logic:
+ * 1. Validate the input pointer.
+ * 2. Retrieve the BlockHeader by stepping backwards in memory from the payload pointer.
+ * 3. Mark the block's 'is_free' flag as true.
+ * Note: Intentionally ignores coalescing (leaving holes as per requirements).
+ */
+void my_free(void* ptr) {
+    if (ptr == NULL) {
+        return;
+    }
+
+    // Step 2: Calculate the address of the header
+    // Casting to (BlockHeader*) and subtracting 1 moves the pointer backwards by exactly sizeof(BlockHeader) bytes.
+    BlockHeader* block = (BlockHeader*)ptr - 1;
+    
+    // Step 3: Mark it as free so my_malloc can reuse it during the next First-Fit search.
+    // Because we do not check if adjacent blocks are free (no coalescing), this creates a "hole".
+    block->is_free = true;
+}

@@ -32,6 +32,7 @@ void reverse(char* begin, char* end)
 // Driver Code
 int main()
 {
+    // actual string - "i like this program very much"
     // reverse each word - "i ekil siht margorp yrev hcum"
     // reverse entire string - "much very program this like i"
     printf("=====================================================\n");

@@ -3,6 +3,14 @@
 
 ## 1. Complete root-of-trust
 ### 1.1. Full block diagram
+Key FW components:
+
+```
+AP ROM - Authenticate and executes Patch images from QSPI
+AP ROM - Authenticate and execute Application images from QSPI
+SS ROM - Authenticate and execute MW images from QSPI
+SS MW - Authenticate and execute networking workloads from QSPI
+```
 
 ### 1.2. Authentication of secure-patches
 
@@ -53,14 +61,8 @@ The public key is not just a random string of numbers; it is a specific set of s
 
 Public key is shared with the binary and sits in the silicon.
 
+### 1.6. Optimization of boot time using TMC configurations
 
-| HSM   | ROOTID | PERSO | ECDSA | RSA  |
-| :---  | :---   | :---  | :---  | :--- |
-|  TBD  |  TBD   |  TBD  |  TBD  | TBD  |
-
-### 1.6. Attestation
-
-### 1.7. Optimization of boot time using TMC configurations
 
 ## 2. Optimizations to boot firmware
 

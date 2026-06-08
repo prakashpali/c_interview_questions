@@ -22,6 +22,7 @@ unsigned int find_next_pow_of_2(unsigned int n)
 
     // do till only one bit is left
     while (n & (n - 1)) {
+        printf("n = 0x%x\n", n);
         n = n & (n - 1);        // unset rightmost bit
     }
 
@@ -33,7 +34,7 @@ unsigned int find_next_pow_of_2(unsigned int n)
 
 int main()
 {
-    unsigned n = 4;
+    unsigned n = 31;
 
     printf("=====================================================\n");
     printf("The next power of %d is %d \n", n, find_next_pow_of_2(n));

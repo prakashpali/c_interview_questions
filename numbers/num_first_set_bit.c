@@ -47,6 +47,11 @@ static int32_t find_first_set_bit_optimized(uint32_t n) {
     if (n == 0) return -1;
 
     uint32_t x = n & -n; // Isolate LSB
+
+    printf("n = 0x%x\n", n);
+    printf("-n = 0x%x\n", -n);
+    printf("x = 0x%x\n", x);
+
     int32_t pos = 0;
 
     // Binary search the position of the isolated bit
@@ -86,7 +91,7 @@ int main(void)
 {
     uint32_t n = 0x9;
 
-    printf("First set bit is %d\n", find_first_set_bit(n));
+    printf("First set bit is %d\n", find_first_set_bit_optimized(n));
 
     return 0;
 }

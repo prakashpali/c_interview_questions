@@ -4,8 +4,8 @@
 
 int main()
 {
-    int i = 5;
-    printf("%d %d %d\n", i++, i++, i++); // 5 6 7, i=8
+    int a[] = {1,2,3,4};
+    printf("%d\n", *(a + 2)); // 3
 
     return 0;
 }

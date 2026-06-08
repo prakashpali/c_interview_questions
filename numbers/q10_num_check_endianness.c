@@ -12,6 +12,21 @@ typedef enum end
     BIG_END,
 } endianness;
 
+endianness get_endianness_optimized(void)
+{
+    unsigned short num = 0x1;
+
+    if (num == *((char *)&num))
+    {
+        return LITTLE_END;
+    }
+    else
+    {
+        return BIG_END;
+    }
+}
+
+
 endianness get_endianness(void)
 {
     unsigned short num = 0xCAFE;
@@ -33,7 +48,7 @@ endianness get_endianness(void)
 
 int main(void)
 {
-    endianness end = get_endianness();
+    endianness end = get_endianness_optimized();
 
     printf("=====================================================\n");
     switch(end)

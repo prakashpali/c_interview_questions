@@ -2,16 +2,15 @@
 
 This document provides a highly technical, Staff-level comparison between FreeRTOS and Zephyr, focusing on kernel design, scheduling algorithms, power management, latency, memory architecture, and device abstraction.
 
----
 
 ## 1. Architectural Scope and Design Philosophy
 
 The primary difference between FreeRTOS and Zephyr lies in their architectural scope and intended scale:
 
-*   **FreeRTOS:** A minimalist, kernel-centric RTOS. It provides only the core scheduler, basic inter-process communication (IPC) mechanisms (queues, semaphores, mutexes), timers, and memory allocation. It intentionally avoids dictating a device driver model or build system. Hardware abstraction is entirely dependent on silicon vendor HALs (e.g., STMicroelectronics HAL, NXP MCUXpresso).
-*   **Zephyr:** A complete, highly integrated RTOS ecosystem governed by the Linux Foundation. Zephyr adopts a Linux-like philosophy for microcontrollers. It includes a comprehensive kernel, but also dictates the build system (CMake/Kconfig), hardware description (Device Tree), unified device driver APIs, and includes full-featured networking, Bluetooth LE, and file system stacks natively.
-
----
+| FreeRTOS | Zephyr |
+| :- | :-- |
+|A minimalist, kernel-centric RTOS. It provides only the core scheduler, basic inter-process communication (IPC) mechanisms (queues, semaphores, mutexes), timers, and memory allocation. | A complete, highly integrated RTOS ecosystem governed by the Linux Foundation. Zephyr adopts a Linux-like philosophy for microcontrollers. |
+|It intentionally avoids dictating a device driver model or build system. Hardware abstraction is entirely dependent on silicon vendor HALs (e.g., STMicroelectronics HAL, NXP MCUXpresso). | It includes a comprehensive kernel, but also dictates the build system (CMake/Kconfig), hardware description (Device Tree), unified device driver APIs, and includes full-featured networking, Bluetooth LE, and file system stacks natively. |
 
 ## 2. Kernel and Scheduling Algorithms
 
@@ -35,8 +34,6 @@ Zephyr features a highly modular scheduling subsystem capable of supporting comp
     *   **Earliest Deadline First (EDF):** Zephyr supports deadline-based scheduling. Threads can be assigned a deadline, and the scheduler will dynamically promote the thread with the closest deadline.
 *   **Meta-IRQ Threads:** Zephyr introduces "Meta-IRQ" threads, which run at the highest possible priority and strictly preempt all other thread classes, effectively acting as bottom-half interrupt handlers running in a thread context.
 
----
-
 ## 3. Power Management and Tickless Operations
 
 Power management dictates how effectively the RTOS can minimize consumption during idle periods.
@@ -52,8 +49,6 @@ Zephyr's Power Management (PM) is deeply integrated and significantly more sophi
 *   **System PM:** Zephyr automatically manages SoC sleep states (e.g., deep sleep, standby). The idle thread interacts with the PM subsystem to select the deepest possible sleep state based on the latency requirements of impending tasks.
 *   **Device PM:** Zephyr tracks the power state of individual peripherals. Devices can be suspended and resumed dynamically (Runtime Device PM) based on reference counting. Dependencies defined in the Device Tree ensure that a bus controller (e.g., I2C) wakes up before the sensor attached to it attempts to communicate.
 
----
-
 ## 4. Interrupt Handling and Latency
 
 Minimizing interrupt latency and providing safe deferred execution paths are critical for hard real-time systems.
@@ -66,8 +61,6 @@ Minimizing interrupt latency and providing safe deferred execution paths are cri
 *   **Two-Half Model:** Zephyr explicitly encourages a Linux-style top-half/bottom-half interrupt model.
 *   **System Workqueues:** The primary mechanism for deferred execution is the System Workqueue. ISRs (top-half) quickly acknowledge hardware and submit a work item. A dedicated workqueue thread (bottom-half) processes the heavy lifting.
 *   **Direct vs. Regular ISRs:** Zephyr distinguishes between Direct ISRs (bypassing Zephyr's internal interrupt tracking for absolute minimum latency) and Regular ISRs (which integrate with Zephyr's power management and scheduler to allow safe kernel API calls).
-
----
 
 ## 5. Memory Management and Protection
 
@@ -82,8 +75,6 @@ Zephyr's memory management mirrors a highly scaled-down POSIX system.
 *   **Memory Domains:** Threads can be grouped into "Memory Domains". A memory domain defines a set of memory partitions. This allows strict compartmentalization (e.g., the networking stack cannot access the cryptographic key partition).
 *   **Stack Protection:** Natively implements hardware-backed stack overflow protection (via MPU guard regions).
 
----
-
 ## 6. Device Model and Ecosystem
 
 ### 6.1. FreeRTOS approach
@@ -95,9 +86,18 @@ Zephyr's memory management mirrors a highly scaled-down POSIX system.
 *   **Unified APIs:** Zephyr provides common APIs for all peripheral classes. An application utilizing the Zephyr `i2c_write()` API will compile and run identically on an NXP i.MX RT, an STM32, or a Nordic nRF device.
 *   **Kconfig:** The entire OS footprint is configured using a highly scalable Kconfig interface, allowing developers to precisely tune out unused subsystems to reduce binary size.
 
----
-
 ## 7. Summary Conclusion
 
 *   Choose **FreeRTOS** when you have a severely resource-constrained MCU, require a minimal footprint, or are deeply integrated with a specific silicon vendor's proprietary HAL and tooling. It is a kernel, not an ecosystem.
 *   Choose **Zephyr** for complex IoT devices, projects requiring extreme portability across different MCU architectures, or when you need advanced features like SMP, Bluetooth LE, complex power management, and strict memory isolation out-of-the-box. It acts as a micro-Linux for embedded systems.
+
+
+| Feature          | FreeRTOS | Zephyr |
+| :--------------- | :------- | :----- |
+| **Philosophy**   | Minimalist, provides only the core scheduler, queues, semaphores, mutexes, timers, and heap | Full FW ecosystem, complex scheduler, build system, device model, driver APIs, networking stack, and filesystem stack |
+| **Thread types** | Either Preemptive or Cooperative | Both Preemptive and Cooperative |
+| **Scheduling**   | Preemptive, Time slicing | Preemptive, Cooperative, Red-Black Tree Scheduler, Earliest Deadline First (EDF) |
+| **Tickless IDLE**| Can be enabled | Enabled by default |
+| **Thread modes** | By default in Priviledged Mode | By default in User Mode |
+| **Memory Model** | None, Need MPU configuration | Enabled natively, Threads can be grouped in memory domains |
+| **Interrupt Architecture** | Raw ISRs, Timer daemon can act as bottom half | Top half and bottom half approach by default |

@@ -82,11 +82,35 @@ Zephyr's memory management mirrors a highly scaled-down POSIX system.
 *   **Configuration:** Configured via a single `FreeRTOSConfig.h` file.
 
 ### 6.2. Zephyr approach
-*   **Device Tree:** Hardware is abstracted completely using Device Tree Source (`.dts`) files. Changing hardware merely requires swapping the board `.dts` overlay.
-*   **Unified APIs:** Zephyr provides common APIs for all peripheral classes. An application utilizing the Zephyr `i2c_write()` API will compile and run identically on an NXP i.MX RT, an STM32, or a Nordic nRF device.
-*   **Kconfig:** The entire OS footprint is configured using a highly scalable Kconfig interface, allowing developers to precisely tune out unused subsystems to reduce binary size.
 
-## 7. Summary Conclusion
+*   **Device Tree**: Hardware configuration is entirely decoupled from C code using standard Device Tree Source (`.dts`) files. Changing a board's hardware merely requires updating the `.dts` overlay, not rewriting initialization code.
+*   **Unified Driver API**: Zephyr provides a single, consistent API for every peripheral class. If you write an application using Zephyr's `i2c_write()` or `uart_poll_in()` functions, that exact same application code will compile and run perfectly on an STM32, an NXP i.MX, or a Nordic nRF chip without any changes.
+*   **Integrated Subsystems**: Because of the unified device model, Zephyr can natively provide massive, complex subsystems (like a full Bluetooth LE Host, a TCP/IP networking stack, and modern File Systems) that work out-of-the-box across all supported architectures.
+
+## 7. Advanced IPC and Synchronization
+
+### 7.1. FreeRTOS IPC
+*   **The Monolithic Queue**: In FreeRTOS, almost all standard synchronization primitives (Binary Semaphores, Counting Semaphores, Mutexes) are actually just **Queues** under the hood (e.g., a Binary Semaphore is simply a Queue of length 1 with an item size of 0). This simplifies the kernel but adds slight overhead.
+*   **Task Notifications**: To bypass Queue overhead, FreeRTOS offers Direct-to-Task Notifications. These are incredibly fast, extremely lightweight (just a 32-bit integer in the TCB), and act as a direct signal to a specific task, replacing the need for semaphores or event groups in many cases.
+
+### 7.2. Zephyr IPC
+*   **Specialized Primitives**: Zephyr offers highly specialized primitives rather than building everything on a queue. A Mutex in Zephyr is distinctly implemented from a Semaphore.
+*   **Zero-Copy FIFOs/LIFOs**: Zephyr's FIFOs and LIFOs are designed to pass pointers. Crucially, they use intrusive linked lists where the *application* provides the memory for the queue node (by embedding an `sys_snode_t` in the data struct). This allows for strictly O(1), zero-copy, allocation-free message passing.
+*   **Mailboxes & Message Queues**: Zephyr provides Mailboxes for synchronous, blocking data transfers (sender blocks until receiver is ready), and Message Queues for asynchronous ring-buffer data copying.
+
+## 8. Build Systems, Configuration, and Tooling
+
+### 8.1. FreeRTOS Build
+*   **Bring Your Own Build System**: FreeRTOS is fundamentally just a directory of `.c` and `.h` files. You can compile it using standard Makefiles, CMake, IAR, or Keil. It imposes zero build system requirements.
+*   **Configuration**: Configured entirely via a single C header file: `FreeRTOSConfig.h`, relying heavily on C preprocessor macros (`#define`).
+
+### 8.2. Zephyr Build (The Micro-Linux)
+*   **West (Meta-tool)**: Zephyr uses its own command-line tool called `west` to manage multiple git repositories, flash binaries, and run debuggers.
+*   **CMake & Kconfig**: Like the Linux kernel, Zephyr uses CMake for its build system and **Kconfig** for its configuration. This allows for a massive, scalable menu-based configuration system to turn on/off thousands of features, drivers, and network protocols.
+*   **Device Tree**: Hardware is abstracted completely using Device Tree Source (`.dts`) files. Changing hardware merely requires swapping the board `.dts` overlay.
+*   **Unified APIs**: Zephyr provides common APIs for all peripheral classes. An application utilizing the Zephyr `i2c_write()` API will compile and run identically on an NXP i.MX RT, an STM32, or a Nordic nRF device.
+
+## 9. Summary Conclusion
 
 *   Choose **FreeRTOS** when you have a severely resource-constrained MCU, require a minimal footprint, or are deeply integrated with a specific silicon vendor's proprietary HAL and tooling. It is a kernel, not an ecosystem.
 *   Choose **Zephyr** for complex IoT devices, projects requiring extreme portability across different MCU architectures, or when you need advanced features like SMP, Bluetooth LE, complex power management, and strict memory isolation out-of-the-box. It acts as a micro-Linux for embedded systems.

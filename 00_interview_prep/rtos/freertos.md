@@ -8,6 +8,27 @@ FreeRTOS primarily operates as a preemptive, real-time operating system, but its
 * **Time Slicing (Round Robin)**: If multiple tasks share the *same* highest priority, the scheduler uses the periodic RTOS Tick interrupt to switch between them fairly. Each task gets a "slice" of CPU time equal to one tick period.
 * **Cooperative Scheduling**: If preemption is disabled, a task runs continuously until it explicitly yields (via `taskYIELD()`) or enters the Blocked state. The OS will not forcefully preempt it, even if a higher priority task becomes ready.
 
+### 1.1. Preemptive Scheduling
+On an ARM Cortex-M processor, preemption is typically triggered by hardware interrupts (e.g., a UART RX interrupt or a GPIO edge).
+* When the hardware interrupt fires, the CPU jumps to your custom Interrupt Service Routine (ISR).
+* Inside the ISR, you might call a FreeRTOS API like `xSemaphoreGiveFromISR()`. If this action unblocks a task that has a *higher* priority than the currently interrupted task, the API sets a flag (`xHigherPriorityTaskWoken = pdTRUE`).
+* At the very end of your ISR, you call the `portYIELD_FROM_ISR()` macro.
+* Under the hood, this macro simply writes to the ARM core's **ICSR** (Interrupt Control and State Register) to set the **PendSV** bit. Because PendSV is the lowest priority interrupt, the CPU finishes your ISR, and then immediately drops into the PendSV exception handler to safely swap the stack pointers and context switch to the high-priority task.
+
+### 1.2. Time Slicing (Round Robin)
+Time slicing relies entirely on the ARM **SysTick** hardware timer.
+* The SysTick timer is a core ARM peripheral programmed by FreeRTOS to generate an interrupt periodically (usually every 1 millisecond).
+* When the SysTick interrupt fires, the CPU enters the `xPortSysTickHandler`.
+* The kernel increments the global RTOS tick count. It then checks the Ready List. If it finds another task sitting in the Ready List that has the *exact same priority* as the currently running task, it decides a context switch is fair.
+* Just like preemption, the SysTick handler sets the **PendSV** bit in the ICSR register to queue up the context switch.
+
+### 1.3. Cooperative Scheduling
+If preemption is turned off (`configUSE_PREEMPTION = 0`), the SysTick timer will *never* trigger a PendSV context switch, even if a higher priority task becomes ready. The currently running task owns the ARM core until it decides to give it up.
+* A context switch only occurs when the running task explicitly calls an API that blocks (like `vTaskDelay()` or waiting on a Mutex) or explicitly calls `taskYIELD()`.
+* When `taskYIELD()` is called from thread code, it executes an assembly instruction (or writes to the ICSR) to manually trigger the **PendSV** (or sometimes an **SVC** - Supervisor Call) exception.
+* The ARM core then jumps to the kernel exception handler to save the current task's context and load the next ready task.
+
+
 ## 2. Scheduling Implementation: ARM vs. RISC-V
 
 Context switching fundamentally relies on hardware timers (for the RTOS Tick) and software interrupts (for the actual context switch).
@@ -36,7 +57,7 @@ In FreeRTOS, almost all classic IPC primitives are secretly built on top of a si
 
 * **Message Queues**: A thread-safe FIFO buffer. Data is copied *by value* into the queue memory. If the queue is full, a writing task enters the Blocked state. If empty, a reading task Blocks until data arrives.
 * **Semaphores**:
-  * Internally implemented as a Queue with a length of `N` but an item size of `0` bytes! 
+  * Internally implemented as a Queue with a length of `N` but an item size of `0` bytes!
   * It only tracks the number of items (the count), wasting no RAM on data. Taking a semaphore is "reading" a 0-byte item; Giving is "writing".
   * **Binary Semaphore**: Length = 1. Used for synchronization (e.g., an ISR unblocking a task).
   * **Counting Semaphore**: Length = N. Used for managing a finite pool of resources.
@@ -53,10 +74,10 @@ A FreeRTOS task exists in exactly one of these states:
 
 ## 6. Priority Inversion
 
-**The Problem**: 
+**The Problem**:
 A Low priority task (`L`) acquires a Mutex. A High priority task (`H`) tries to acquire the same Mutex and goes to the Blocked state. A Medium priority task (`M`) becomes Ready and preempts `L`. Now `M` is running indefinitely, preventing `L` from ever releasing the Mutex. As a result, `H` is effectively blocked by `M`, meaning priority has been severely inverted!
 
-**The Solution (Priority Inheritance)**: 
+**The Solution (Priority Inheritance)**:
 When `H` blocks on a Mutex held by `L`, FreeRTOS temporarily elevates `L`'s priority to match `H`. This prevents `M` from preempting `L`. `L` finishes its critical section quickly, releases the Mutex, and its priority instantly drops back down, allowing `H` to acquire the Mutex and run.
 
 ## 7. `vTaskDelay` / `thread_sleep()`
@@ -74,7 +95,7 @@ When `H` blocks on a Mutex held by `L`, FreeRTOS temporarily elevates `L`'s prio
 Yes! Historically, FreeRTOS was strictly a single-core RTOS. Multi-core chips (like the dual-core ESP32 or Raspberry Pi RP2040) relied on custom forks of FreeRTOS maintained by the silicon vendors. However, as of **FreeRTOS V11.0.0**, SMP support has been officially merged into the mainline kernel.
 
 ### 8.1. Key SMP Concepts in FreeRTOS:
-* **One Scheduler, Multiple Cores**: A single unified instance of the FreeRTOS kernel manages the ready lists and scheduling for all available cores simultaneously. 
+* **One Scheduler, Multiple Cores**: A single unified instance of the FreeRTOS kernel manages the ready lists and scheduling for all available cores simultaneously.
 * **Core Affinity**: You can restrict a task to run only on a specific core (or a specific set of cores) using `vTaskCoreAffinitySet()`. This is highly useful for optimizing CPU cache hits or ensuring that a high-priority real-time task on Core 0 is never preempted by a generic UI task spinning on Core 1.
 * **True Concurrency**: In the **Running** state, there can now be up to *N* tasks running at the exact same physical time (where *N* is the number of cores).
 * **Spinlocks for Critical Sections**: In a single-core system, FreeRTOS protects its internal data structures (like moving a task from the Ready list to the Blocked list) simply by disabling interrupts (`taskENTER_CRITICAL()`). In an SMP system, disabling interrupts on Core 0 doesn't stop Core 1 from modifying that exact same list! Therefore, the SMP kernel introduces hardware **Spinlocks** under the hood to achieve true mutual exclusion across multiple physical cores.
@@ -82,11 +103,11 @@ Yes! Historically, FreeRTOS was strictly a single-core RTOS. Multi-core chips (l
 ### 8.2. Under the Hood: How SMP is Implemented
 To upgrade from a single-core RTOS to an SMP RTOS, the FreeRTOS kernel engineers made a few critical architectural additions:
 
-1. **Inter-Processor Interrupts (IPI) / Yielding**: 
+1. **Inter-Processor Interrupts (IPI) / Yielding**:
    Imagine Core 0 is running an ISR and unblocks a high-priority task. However, Core 1 is currently running a low-priority background task. Core 0 needs a way to force Core 1 to do a context switch immediately. It achieves this by firing a hardware **Inter-Processor Interrupt (IPI)** to Core 1. When Core 1 receives the IPI, it enters an ISR, runs the scheduler, and yields to the new high-priority task.
-2. **Upgraded Critical Sections (`taskENTER_CRITICAL`)**: 
+2. **Upgraded Critical Sections (`taskENTER_CRITICAL`)**:
    The port macro for critical sections was completely rewritten. Now, when a task calls `taskENTER_CRITICAL()`, it disables its *local* core's interrupts AND attempts to acquire a global hardware spinlock. If Core 1 already holds the spinlock, Core 0 will loop ("spin") until Core 1 releases it.
-3. **Task Control Block (TCB) Expansion and Location**: 
+3. **Task Control Block (TCB) Expansion and Location**:
    In an SMP architecture, all cores share the same physical memory map. Therefore, the `TCB_t` structures are located in standard **shared system RAM** (allocated via the heap or statically in `.bss`), meaning any core can access any task's TCB. To support this shared access safely, the `TCB_t` structure itself was expanded. It now tracks:
    * `xCoreID`: Which specific core the task is currently executing on (crucial so the scheduler doesn't accidentally try to run the same task on two cores at once!).
    * `uxCoreAffinityMask`: A bitmask determining which cores the task is allowed to run on.
@@ -106,14 +127,37 @@ FreeRTOS does not rely on the standard C library `malloc()` / `free()` by defaul
 ### 9.2. Deferred Interrupt Processing (`FromISR` APIs)
 In FreeRTOS, you must **never** call standard blocking APIs (like `xQueueSend()`) from inside a hardware Interrupt Service Routine (ISR).
 * **Why?**: An ISR runs in the hardware exception context, not a thread context. If an ISR "Blocked" waiting for a queue, the entire CPU core would deadlock.
-* **The Solution**: FreeRTOS provides special `*FromISR()` APIs (e.g., `xQueueSendFromISR()`). These functions will *never* block. If a Queue is full, they instantly return an error. 
+* **The Solution**: FreeRTOS provides special `*FromISR()` APIs (e.g., `xQueueSendFromISR()`). These functions will *never* block. If a Queue is full, they instantly return an error.
 * **`xHigherPriorityTaskWoken`**: When you push data to a Queue from an ISR, it might unblock a high-priority task. The `FromISR` API will set this boolean flag to `pdTRUE`. At the very end of your ISR, you must manually trigger a context switch (via `portYIELD_FROM_ISR()`) so the CPU immediately jumps to the newly unblocked task rather than returning to whatever low-priority task it originally interrupted.
 
 ### 9.3. Software Timers & The Timer Service Task
 FreeRTOS allows you to create Software Timers that execute a callback function when they expire.
-* **How they work**: They do not use individual hardware interrupts. Instead, FreeRTOS spawns a hidden system task called the **Timer Service Task** (`Tmr Svc`). 
+* **How they work**: They do not use individual hardware interrupts. Instead, FreeRTOS spawns a hidden system task called the **Timer Service Task** (`Tmr Svc`).
 * **The Timer Command Queue**: When you start or stop a software timer from your code, you are actually just sending a message to a hidden "Timer Command Queue". The Timer Service Task reads this queue and executes the requested callbacks.
 * **Golden Rule**: Timer callbacks run in the context of the Timer Service Task. Therefore, a callback must **never** enter the Blocked state (e.g., calling `vTaskDelay` or waiting on a Mutex), because doing so would halt all other software timers in the entire system!
 
 ### 9.4. Event Groups
 While a Queue transfers data, and a Semaphore signals a single event, an **Event Group** allows a task to wait in the Blocked state for a *combination* of multiple different events to occur simultaneously. It is essentially a 32-bit integer where each bit represents a distinct flag, allowing for complex multi-thread synchronization (e.g., "Stay Blocked until Bit 0 AND Bit 2 are both set by other tasks").
+
+## 10. FreeRTOS vs. Linux: The Determinism Factor
+
+A frequent architectural question is "Why use FreeRTOS when Embedded Linux is so powerful?" The answer boils down to **Determinism** versus **Throughput**.
+
+* **General Purpose OS (Linux)**: Linux is designed for maximum throughput and fairness. It uses complex algorithms like the Completely Fair Scheduler (CFS). If an external interrupt occurs, the time it takes for Linux to context switch to a user-space application to handle that interrupt is highly variable. It might be delayed by page faults (due to virtual memory), complex lock contention deep inside the massive kernel, or deferred execution mechanisms. You cannot mathematically guarantee a worst-case response time.
+* **Real-Time OS (FreeRTOS)**: FreeRTOS is designed for **Determinism**. "Deterministic" means you can mathematically calculate and guarantee that a specific high-priority task will *always* execute within a known, hard maximum number of clock cycles after an event occurs.
+  * FreeRTOS achieves this by using a strict O(1) fixed-priority preemptive scheduler.
+  * There is no virtual memory, and therefore absolutely zero risk of a non-deterministic page fault.
+  * The kernel architecture is incredibly minimal, meaning kernel critical sections (where interrupts are briefly disabled) are very short and predictable. If a high-priority interrupt fires, FreeRTOS guarantees a "hard real-time" context switch to the highest priority handler task immediately.
+
+## 11. FreeRTOS vs. SafeRTOS
+
+As products transition from R&D prototypes to commercial medical, automotive, or aerospace devices, engineering teams often migrate from FreeRTOS to **SafeRTOS**.
+
+**What is SafeRTOS?**
+SafeRTOS is a commercial, safety-critical RTOS developed by WITTENSTEIN high integrity systems. The API is functionally identical to FreeRTOS (meaning developers can easily drop it into existing FreeRTOS projects), but the underlying kernel code has been completely rewritten to meet rigorous international safety standards.
+
+**Key Differences & Offerings:**
+1. **Pre-Certified**: SafeRTOS comes out-of-the-box pre-certified by TÜV SÜD to the absolute highest safety standards, including **IEC 61508 SIL 3** (Industrial), **ISO 26262 ASIL D** (Automotive), and **FDA 510(k)/IEC 62304** (Medical). Buying this pre-certified kernel saves companies millions of dollars and years of time in independent safety audits.
+2. **MISRA C Compliance**: The SafeRTOS codebase was strictly rewritten from the ground up following MISRA C guidelines to entirely eliminate undefined behaviors and dangerous C language constructs that exist in standard open-source projects.
+3. **Deterministic Error Handling**: In vanilla FreeRTOS, passing a bad pointer or an invalid handle to an API might cause a silent crash or memory corruption. SafeRTOS includes exhaustive parameter checking. Every single API call deeply validates its inputs and returns a deterministic, documented error code if anything is structurally wrong.
+4. **Static Allocation Enforced**: In safety-critical systems, dynamic memory allocation (`malloc`) is considered highly dangerous due to fragmentation and non-deterministic execution time. SafeRTOS forces developers to statically allocate all Task Control Blocks, Stacks, and Queues at compile-time to mathematically guarantee memory stability for the lifetime of the device.

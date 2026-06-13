@@ -28,6 +28,23 @@ If preemption is turned off (`configUSE_PREEMPTION = 0`), the SysTick timer will
 * When `taskYIELD()` is called from thread code, it executes an assembly instruction (or writes to the ICSR) to manually trigger the **PendSV** (or sometimes an **SVC** - Supervisor Call) exception.
 * The ARM core then jumps to the kernel exception handler to save the current task's context and load the next ready task.
 
+### 1.4. Core Data Structures and Scheduling Complexity
+
+FreeRTOS manages threads using a fundamental internal data structure: the **Doubly Linked List** (`List_t` and `ListItem_t`).
+
+**The Ready Lists (`pxReadyTasksLists`)**
+FreeRTOS creates an array of these doubly linked lists, specifically one list for every possible priority level. For example, `pxReadyTasksLists[3]` contains a linked list of all tasks that are currently Ready and have a priority of 3.
+
+**Time Complexities:**
+1. **Selecting the Next Task to Run**: **$O(1)$**
+   * How does the scheduler quickly find the highest priority task? FreeRTOS maintains a 32-bit integer bitmap (`uxTopReadyPriority`) where each bit represents a priority level. If bit 3 is set to `1`, it means there is at least one task in `pxReadyTasksLists[3]`.
+   * When `configUSE_PORT_OPTIMISED_TASK_SELECTION` is enabled, the kernel uses a single hardware assembly instruction (like `CLZ` - Count Leading Zeros on ARM) to instantly find the highest set bit in $O(1)$ time. 
+   * *Note*: If the generic C fallback implementation is used, it takes $O(N)$ time, where $N$ is the number of configured priority levels, as it checks the array from top to bottom.
+2. **Moving a Task to the Ready State**: **$O(1)$**
+   * When a task becomes ready, it is simply appended to the tail of the linked list for its specific priority `pxReadyTasksLists[priority]`. Linked list tail insertion is $O(1)$.
+3. **Moving a Task to the Blocked/Delayed State**: **$O(N)$**
+   * When a task calls `vTaskDelay()`, it is moved to the `pxDelayedTaskList`. Unlike the Ready Lists, this list is sorted strictly by the *time* the task needs to wake up. Therefore, the kernel must traverse the linked list to find the correct chronological insertion point. The complexity is $O(N)$, where $N$ is the number of currently delayed tasks.
+
 
 ## 2. Scheduling Implementation: ARM vs. RISC-V
 

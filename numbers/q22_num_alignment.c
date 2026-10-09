@@ -15,8 +15,11 @@
  * 8 --> 8
  * 9 --> 16
  */
-#define ALIGN_TO_8B(num)    ((num) + (ALIGNMENT_8B - 1) & ~(ALIGNMENT_8B - 1))
-#define ALIGN_TO_32B(num)   ((num) + (ALIGNMENT_32B - 1) & ~(ALIGNMENT_32B - 1))
+/* Generic alignment macro: ALIGN_UP(num, align) */
+#define ALIGN_UP(num, align)    (((num) + ((align) - 1U)) & ~((align) - 1U))
+
+#define ALIGN_TO_8B(num)        ALIGN_UP((num), ALIGNMENT_8B)
+#define ALIGN_TO_32B(num)       ALIGN_UP((num), ALIGNMENT_32B)
 
 int main (void)
 {

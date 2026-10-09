@@ -34,7 +34,12 @@
 #include "../../utils.h"
 
 #define QUEUE_SIZE      (8U)
-#define QUEUE_SIZE_MASK (0x7U)
+#define QUEUE_SIZE_MASK (QUEUE_SIZE - 1U)
+
+/* Ensure QUEUE_SIZE is a non-zero power of 2 for bitwise masking to work correctly */
+#if ((QUEUE_SIZE == 0) || ((QUEUE_SIZE & (QUEUE_SIZE - 1U)) != 0))
+#error "QUEUE_SIZE must be a power of 2 to use bitwise mask wrapping (QUEUE_SIZE_MASK)"
+#endif
 
 
 typedef unsigned char   uint8_t;
